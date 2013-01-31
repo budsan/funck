@@ -1,0 +1,311 @@
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<link rel="stylesheet" href="css/bootstrap.css" >
+	<style>
+	.CodeMirror {
+		line-height: 1.3em;
+		font-family: monospace;
+
+		/* Necessary so the scrollbar can be absolutely positioned within the wrapper on Lion. */
+		position: relative;
+		/* This prevents unwanted scrollbars from showing up on the body and wrapper in IE. */
+		overflow: hidden;
+		background-color: white;
+		width: 94%;
+
+		/* Copied from Bootstrap's textarea */
+		display: inline-block;
+		padding: 4px 6px;
+		margin-bottom: 9px;
+		color: #555555;
+		border: 1px solid #ccc;
+		-webkit-border-radius: 3px;
+		-moz-border-radius: 3px;
+		border-radius: 3px;
+		-webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+		-moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+		box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+		-webkit-transition: border linear 0.2s, box-shadow linear 0.2s;
+		-moz-transition: border linear 0.2s, box-shadow linear 0.2s;
+		-ms-transition: border linear 0.2s, box-shadow linear 0.2s;
+		-o-transition: border linear 0.2s, box-shadow linear 0.2s;
+		transition: border linear 0.2s, box-shadow linear 0.2s;  
+	}
+
+	.CodeMirror-focused {
+		/* Copied from Bootstrap's textarea */
+		border-color: rgba(82, 168, 236, 0.8);
+		outline: 0;
+		outline: thin dotted \9;
+		/* IE6-9 */
+
+		-webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
+		-moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
+		box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);  
+	}
+
+	input[type="text"], .add-on {
+		height: 30px;
+		font-family: monospace;
+	}
+
+	.audiodiv, audio {
+		width: 900px;
+		height: 30px;
+	}
+	</style>
+</head>
+	<body>
+		<div class="container well">
+			<form class="form-horizontal" onsubmit="return false;">
+			<div class="input-prepend">
+				<span class="add-on span1">Left_</span>
+				<input class="span11" id="oneliner" value="t * ((t&gt;&gt;12|t&gt;&gt;8)&amp;63&amp;t&gt;&gt;4)" type="text"placeholder="Put your oneliner here...">
+			</div>
+			<div class="input-prepend">
+				<span class="add-on span1">Right</span>
+				<input class="span11" id="oneliner2" type="text" placeholder="Leave this field empty for mono sound...">
+			</div>
+
+			<div class="span12" id="aux-container">
+				<!--<textarea id="aux"></textarea> -->
+			</div>
+
+			<div class="input-prepend">
+				<span class="add-on span1">t<sub>0</sub></span>
+				<input class="input-mini" id="t0" value="0" type="text" >
+			</div>
+			<div class="input-prepend">
+				<span class="add-on">t<sub>mod</sub></span>
+				<input class="input-mini" id="tmod" value="0" type="text" >
+			</div>
+			<div class="input-prepend input-append">
+				<span class="add-on">Duration</sub></span>
+				<input class="input-mini" id="duration" value="30" type="text" >
+				<span class="add-on">s</sub></span>
+			</div>
+			<div class="input-prepend input-append">
+				<span class="add-on">Stereo separation</sub></span>
+				<input class="input-mini" id="separation" min="0" max="100" value="100" step="5" type="text">
+				<span class="add-on">%</sub></span>
+			</div>
+			<div class="input-prepend">
+				<span class="add-on">Samplerate</span>
+				<select class="input-small" name="samplerate" id="samplerate">
+					<option>44100</option>
+					<option>22050</option>
+					<option>11025</option>
+					<option selected="selected">8000</option>
+				</select>
+			</div>
+
+			<input value="Generate" id="gen" type="submit" class="btn btn-primary">
+			</form>
+				<canvas id="fft" width="900" height="200"></canvas>
+			<span id="error"></span>
+			<div id="player" class="audiodiv"></div>
+			<div class="container input-prepend">
+				<span class="add-on">Permalink</span>
+				<input class="span11" id="link" type="text" placeholder="hinthint: use this as an URL">
+			</div>
+            
+	</div>
+
+<script src="lib/codemirror.js"></script>
+<link rel="stylesheet" href="lib/codemirror.css">
+<script src="mode/javascript/javascript.js"></script>
+
+<script src="magic.js"></script>
+<script src="codecs.js"></script>
+
+<script>
+var codeMirror = CodeMirror(document.getElementById("aux-container"), {
+	lineNumbers: true
+});
+
+
+function utf8_to_b64( str ) {
+    return window.btoa(encodeURIComponent( str ));
+}
+
+function b64_to_utf8( str ) {
+    return decodeURIComponent(window.atob( str ));
+}
+
+function play() {
+	//check if oneliner one is empty, but two filled
+	if (document.getElementById("oneliner").value == "" && document.getElementById("oneliner2").value != "") {
+		//copy string over
+		document.getElementById("oneliner").value = document.getElementById("oneliner2").value;
+		document.getElementById("oneliner2").value = "";
+	}
+
+	//create links
+	var obj = getParams();
+	document.getElementById("link").value = makeLink(obj);
+	try {
+		playDataURI(makeURL(obj));
+		document.getElementById('error').innerText = "";
+	} catch (err) {
+		document.getElementById('error').innerText = ""+err;
+		alert(err);					
+		throw err;
+	}
+}
+
+function readURL() {
+	var idx = document.URL.indexOf('?');
+	if (idx != -1) {
+		var json = false;
+		var tempParams = new Object();
+		var parm = document.URL.substring(idx+1, document.URL.length);
+		try {
+			//COMPRESSED URL
+			parm_aux = b64_to_utf8(decodeURIComponent(parm)).decode_lzw();
+			tempParams = JSON.parse(parm_aux);
+			json = true;
+		}
+		catch(ex) {}
+		if (!json) {
+			//UNCOMPRESSED URL
+			var pairs = document.URL.substring(idx+1, document.URL.length).split('&');
+			for (var i=0; i< pairs.length; i++) {
+				var j = pairs[i].indexOf('=');
+				var name = pairs[i].substring(0, j);
+				var value = pairs[i].substring(j+1);
+				if (name == "oneliner" || name == "oneliner2" || name == "aux") {
+					value = decodeURIComponent(value);
+				}
+				tempParams[name] = value;
+			}
+		}
+		
+		return tempParams;
+	}
+}
+
+function getParams() {
+	var params = Object();
+	params.oneliner   = document.getElementById('oneliner').value;
+	params.oneliner2  = document.getElementById('oneliner2').value;
+	params.aux        = codeMirror.getValue();
+
+	params.t0         = document.getElementById('t0').value;
+	params.t0         = (params.t0 < 0) ? 0 : params.t0;
+	document.getElementById('t0').value = params.t0;
+
+	params.tmod       = document.getElementById('tmod').value;
+	params.tmod       = (params.tmod  < 0) ? 0 : params.tmod ;
+	document.getElementById('tmod').value = params.tmod;
+
+	params.duration   = document.getElementById('duration').value;
+	params.duration   = (params.duration < 1.0) ? 1.0 : params.duration;
+	document.getElementById('duration').value = params.duration;
+
+	params.separation = document.getElementById('separation').value;
+	if (params.separation < 0  ) params.separation = 0;
+	if (params.separation > 100) params.separation = 100;
+	params.separation = (parseInt(params.separation)/20)*20;
+	document.getElementById('separation').value = params.separation;
+
+
+	params.rate       = document.getElementById('samplerate').value;
+	if      (params.rate <= 8000 ) params.rate = 8000;
+	else if (params.rate <= 11025) params.rate = 11025;
+	else if (params.rate <= 22050) params.rate = 22050;
+	else                           params.rate = 44100;
+	document.getElementById('samplerate').value = params.rate;
+
+	return params;
+}
+
+function setParams(params) {
+	var shouldPlay = false;
+	if (params["rate"]) {
+		if      (params.rate <= 8000 ) params.rate = 8000;
+		else if (params.rate <= 11025) params.rate = 11025;
+		else if (params.rate <= 22050) params.rate = 22050;
+		else                           params.rate = 44100;
+		document.getElementById('samplerate').value = params.rate;
+	}
+	if (params["t0"]) {
+		document.getElementById("t0").value = params["t0"];
+	}
+	if (params["tmod"]) {
+		document.getElementById("tmod").value = params["tmod"];
+	}
+	if (params["duration"]) {
+		document.getElementById("duration").value = params["duration"];
+	}
+	if (params["separation"]) {
+		document.getElementById("separation").value = params["separation"];
+	}
+	if (params["oneliner"]) {
+		document.getElementById("oneliner").value = params["oneliner"];
+		shouldPlay = true;
+	}
+	if (params["oneliner2"]) {
+		document.getElementById("oneliner2").value = params["oneliner2"];
+		shouldPlay = true;
+	}
+	if (params["aux"]) {
+		codeMirror.setValue(params["aux"])
+		shouldPlay = true;
+	}
+	
+	return shouldPlay;
+}
+
+function makeLink(obj) {
+	var link;
+	var idx = document.URL.indexOf('?');
+	if (idx != -1) {
+		link = document.URL.substring(0, idx);
+	}
+	else {
+		link = document.URL;
+	}
+
+	obj_str = JSON.stringify(obj);
+	obj_enc = obj_str.encode_lzw();
+	obj_bin = utf8_to_b64(obj_enc);
+	obj_url = encodeURIComponent(obj_bin);
+
+	var parm = "";
+	parm += "oneliner="    + encodeURIComponent(obj.oneliner);
+	parm += "&oneliner2="  + encodeURIComponent(obj.oneliner2);
+	parm += "&aux="        + encodeURIComponent(obj.aux);
+	parm += "&t0="         + encodeURIComponent(obj.t0);
+	parm += "&tmod="       + encodeURIComponent(obj.tmod);
+	parm += "&duration="   + encodeURIComponent(obj.duration);
+	parm += "&separation=" + encodeURIComponent(obj.separation);
+	parm += "&rate="       + encodeURIComponent(obj.rate);
+
+	if (obj_url.length < parm.length ) {
+		parm = obj_url;
+	}
+	
+	return link + "?" + parm;
+}
+
+var x = document.createElement('audio');
+var hasAudio = (typeof(x.play) !== 'undefined');
+if (!hasAudio) {
+	alert("You don't seem to have a browser that supports audio. It's ok, you're not a bad person. But this app will now fail.");
+}
+
+document.getElementById("oneliner").focus();
+document.getElementById("gen").onclick = function () {
+	play();
+};
+
+params = readURL();
+if (params) {
+	var shouldPlay = setParams(params);
+	if (shouldPlay) play();
+}
+
+</script>
+</body>
+</html>
