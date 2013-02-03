@@ -18,6 +18,8 @@ function generateSound(params) {
 	var _f1 = null, _f2 = null;
 	var _separation = params.separation;
 	_separation = 1.0 - _separation / 100.0;
+	var _samples = [];
+	var _curChan = 0;
 
 	//public
 	var sin = Math.sin;
@@ -29,11 +31,16 @@ function generateSound(params) {
 
 	var t = 0;
 	var rate = 0;
-	var samples = []; //TODO: Deferred sample normalization
+	var s = function(i, chan) {
+		if (typeof chan === 'undefined') chan = _curChan;
+		i *= _channels;
+		if (i >= 0 && i < _samples.length) return _samples[i+chan];
+		return 0;
+	};
 	
 	//userspace
 	eval (params.aux);
-	eval("var _f1 = function (t) { return " + params.oneliner + ";}");
+	eval("_f1 = function (t) { return " + params.oneliner + ";}");
 	if (params.oneliner2 != "") {
 		eval("_f2 = function (t) { return " + params.oneliner2 + ";}");
 		_channels = 2;
@@ -55,14 +62,13 @@ function generateSound(params) {
 
 		//left channel
 		var sample = _f1(cT);
-		sample = (sample & 0xff) * 256;
-		
 		var sample2;
-		if (_channels > 1 && f2 != null) {
+		if (_channels > 1 && _f2 != null) {
 			//right channel
+			_curChan = 1;
 			sample2 = _f2(cT);
-			sample2 = (sample2 & 0xff) * 256;
- 
+			_curChan = 0;
+
 			//calculate value with stereo separation and normalize
 			var newSample = mixAB(sample, sample2, _separation);
 			var newSample2 = mixAB(sample2, sample, _separation);
@@ -70,17 +76,22 @@ function generateSound(params) {
 			sample2 = newSample2;
 		}
 		//store left sample
-		if (sample < 0) sample = 0;
-		if (sample > 65535) sample = 65535;
-		samples.push(sample);
+		_samples.push(sample);
 		//store right sample if any
-		if (_channels > 1 && f2 != null) {
-			if (sample2 < 0) sample2 = 0;
-			if (sample2 > 65535) sample2 = 65535;
-			samples.push(sample2);
+		if (_channels > 1 && _f2 != null) {
+			_samples.push(sample2);
 		}
 	}
-	return [_rate, samples, _channels];
+
+	for(var i = 0; i < _samples.length; i++) {
+		var sample = parseInt(_samples[i]);
+		sample = (sample & 0xff) * 256;
+		if (sample < 0) sample = 0;
+		if (sample > 65535) sample = 65535;
+		_samples[i] = sample;
+	}
+
+	return [_rate, _samples, _channels];
 }
 
 // [255, 0] -> "%FF%00"
