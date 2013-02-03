@@ -3,81 +3,84 @@
 // 2011-10-07 - Modifications by raer.
 // 2013-01-30 - Modifications by bud.
 
-function makeSampleFunction(oneLiner, aux) {
-	var oneLiner = oneLiner.replace(/sin/g, "Math.sin");
-	var oneLiner = oneLiner.replace(/cos/g, "Math.cos");
-	var oneLiner = oneLiner.replace(/tan/g, "Math.tan");
-	var oneLiner = oneLiner.replace(/floor/g, "Math.floor");
-	var oneLiner = oneLiner.replace(/ceil/g, "Math.ceil");
-
-	eval("var f = function (t) { " + aux + "; return " + oneLiner + ";}");
-	return f;
-}
-
 function mixAB(a, b, t)
 {
 	return (a + b * t) / (1.0 + t);
 }
 
 function generateSound(params) {
-	//get + check input values and set proper value back
-	var frequency = params.rate;
-	var t0 = params.t0;
-	var tmod = params.tmod;
-	var seconds = params.duration;
-	var separation = params.separation;
-	separation = 1.0 - separation / 100.0;
+	//private
+	var _rate = params.rate;
+	var _t0 = params.t0;
+	var _tmod = params.tmod;
+	var _seconds = params.duration;
+	var _channels = 1;
+	var _f1 = null, _f2 = null;
+	var _separation = params.separation;
+	_separation = 1.0 - _separation / 100.0;
 
-	var sampleArray = [];
-	var aux = params.aux;
-	var f = makeSampleFunction(params.oneliner, aux);
-	var f2 = null;
-	var channels = 1;
+	//public
+	var sin = Math.sin;
+	var cos = Math.cos;
+	var tan = Math.tan;
+	var floor = Math.floor;
+	var ceil  = Math.ceil;
+	var PI  = Math.PI;
+
+	var t = 0;
+	var rate = 0;
+	var samples = []; //TODO: Deferred sample normalization
+	
+	//userspace
+	eval (params.aux);
+	eval("var _f1 = function (t) { return " + params.oneliner + ";}");
 	if (params.oneliner2 != "") {
-		f2 = makeSampleFunction(params.oneliner2, aux);
-		channels = 2;
+		eval("_f2 = function (t) { return " + params.oneliner2 + ";}");
+		_channels = 2;
 	}
 	
-	for (var t = t0; t < frequency*seconds; t++) {
+	for (var _t = _t0; _t < _rate*_seconds; _t++) {
+		// just in case this vars are modified.
+		t = _t; 
+		rate = _rate;
+
 		//mod t with user-set value if any
 		var cT;
-		if (tmod > 0) {
-			cT = t%tmod;
+		if (_tmod > 0) {
+			cT = t%_tmod;
 		}
 		else {
 			cT = t;
 		}
 
 		//left channel
-		var sample = f(cT);
+		var sample = _f1(cT);
 		sample = (sample & 0xff) * 256;
 		
 		var sample2;
-		
-		if (channels > 1 && f2 != null) {
+		if (_channels > 1 && f2 != null) {
 			//right channel
-			sample2 = f2(cT);
-			sample2 = (sample2 & 0xff) * 256;  
+			sample2 = _f2(cT);
+			sample2 = (sample2 & 0xff) * 256;
+ 
 			//calculate value with stereo separation and normalize
-			//before, not working: (sample + sample2 * separation) / (1.0 + separation);
-			//better, not working: mixed = a + b – a*b / max
-			var newSample = mixAB(sample, sample2, separation);
-			var newSample2 = mixAB(sample2, sample, separation);
-			sample = newSample;
+			var newSample = mixAB(sample, sample2, _separation);
+			var newSample2 = mixAB(sample2, sample, _separation);
+			sample  = newSample;
 			sample2 = newSample2;
 		}
 		//store left sample
 		if (sample < 0) sample = 0;
 		if (sample > 65535) sample = 65535;
-		sampleArray.push(sample);
+		samples.push(sample);
 		//store right sample if any
-		if (channels > 1 && f2 != null) {
+		if (_channels > 1 && f2 != null) {
 			if (sample2 < 0) sample2 = 0;
 			if (sample2 > 65535) sample2 = 65535;
-			sampleArray.push(sample2);
+			samples.push(sample2);
 		}
 	}
-	return [frequency, sampleArray, channels];
+	return [_rate, samples, _channels];
 }
 
 // [255, 0] -> "%FF%00"
@@ -109,41 +112,41 @@ function split32bitValueToBytes(l) {
 }
 
 
-function FMTSubChunk(channels, bitsPerSample, frequency) {
-	var byteRate = frequency * channels * bitsPerSample/8;
+function FMTSubChunk(channels, bitsPerSample, rate) {
+	var byteRate = rate * channels * bitsPerSample/8;
 	var blockAlign = channels * bitsPerSample/8;
 	return [].concat(
 		c("fmt "),
 		split32bitValueToBytes(16), // Subchunk1Size for PCM
 		[1, 0], // PCM is 1, split to 16 bit
 		[channels, 0], 
-		split32bitValueToBytes(frequency),
+		split32bitValueToBytes(rate),
 		split32bitValueToBytes(byteRate),
 		[blockAlign, 0],
 		[bitsPerSample, 0]
 	);
 }
 
-function sampleArrayToData(sampleArray, bitsPerSample) {
-	if (bitsPerSample === 8) return sampleArray;
+function samplesToData(samples, bitsPerSample) {
+	if (bitsPerSample === 8) return samples;
 	if (bitsPerSample !== 16) {
 		alert("Only 8 or 16 bit supported.");
 		return;
 	}
 	
 	var data = [];
-	for (var i = 0; i < sampleArray.length; i++) {
-		data.push(0xff & sampleArray[i]);
-		data.push((0xff00 & sampleArray[i])>>8);
+	for (var i = 0; i < samples.length; i++) {
+		data.push(0xff & samples[i]);
+		data.push((0xff00 & samples[i])>>8);
 	}
 	return data;
 }
 
-function dataSubChunk(channels, bitsPerSample, sampleArray) {
+function dataSubChunk(channels, bitsPerSample, samples) {
 	return [].concat(
 		c("data"),
-		split32bitValueToBytes(sampleArray.length * bitsPerSample/8),
-		sampleArrayToData(sampleArray, bitsPerSample)
+		split32bitValueToBytes(samples.length * bitsPerSample/8),
+		samplesToData(samples, bitsPerSample)
 	);
 }
 
@@ -151,9 +154,9 @@ function chunkSize(fmt, data) {
 	return split32bitValueToBytes(4 + (8 + fmt.length) + (8 + data.length));
 }
 	
-function RIFFChunk(channels, bitsPerSample, frequency, sampleArray) {
-	var fmt = FMTSubChunk(channels, bitsPerSample, frequency);
-	var data = dataSubChunk(channels, bitsPerSample, sampleArray);
+function RIFFChunk(channels, bitsPerSample, rate, samples) {
+	var fmt = FMTSubChunk(channels, bitsPerSample, rate);
+	var data = dataSubChunk(channels, bitsPerSample, samples);
 	var header = [].concat(c("RIFF"), chunkSize(fmt, data), c("WAVE"));
 	return [].concat(header, fmt, data);
 }
@@ -174,7 +177,7 @@ var lastPosition;
 function makeURL(params) {
 	var bitsPerSample = 16;	
 	var generated = generateSound(params);
-	var frequency = generated[0];
+	var rate = generated[0];
 	var samples = generated[1];
 	var channels = generated[2];
 
@@ -193,7 +196,7 @@ function makeURL(params) {
 	{
 		fftd.frameBuffer = samples;
 		fftd.channels    = channels;
-		fftd.rate        = parseInt(frequency);
+		fftd.rate        = parseInt(rate);
 
 		try {
 			fftd.frameBufferLength = el.mozFrameBufferLength;
@@ -204,7 +207,7 @@ function makeURL(params) {
 		fftd.fft = new FFT(fftd.frameBufferLength / fftd.channels, fftd.rate);
 	}
 
-	return "data:audio/x-wav," + b(RIFFChunk(channels, bitsPerSample, frequency, samples));	
+	return "data:audio/x-wav," + b(RIFFChunk(channels, bitsPerSample, rate, samples));	
 }
 
 function onTimeUpdate()
@@ -238,7 +241,7 @@ function onTimeUpdate()
 		// multiply spectrum by a zoom value
 		magnitude = fftd.fft.spectrum[i] * 1000;
 
-		// Draw rectangle bars for each frequency bin
+		// Draw rectangle bars for each rate bin
 		fftd.ctx.fillRect(i * 4, fftd.canvas.height, 3, -magnitude);
 	}
 }
