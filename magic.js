@@ -208,12 +208,7 @@ function makeURL(params) {
 		fftd.frameBuffer = samples;
 		fftd.channels    = channels;
 		fftd.rate        = parseInt(rate);
-
-		try {
-			fftd.frameBufferLength = el.mozFrameBufferLength;
-		} catch(ex) {
-			fftd.frameBufferLength = 2048;
-		}
+		fftd.frameBufferLength = 2048;
 
 		fftd.fft = new FFT(fftd.frameBufferLength / fftd.channels, fftd.rate);
 	}
@@ -274,9 +269,25 @@ function playDataURI(uri) {
 	el.setAttribute("autoplay", true);
 	el.setAttribute("src", uri);
 	el.setAttribute("controls", "controls");
-
-	el.addEventListener('MozAudioAvailable', onTimeUpdate, false);
-	el.addEventListener('timeupdate', onTimeUpdate, false);
+	
+	var who = navigator.sayswho();
+	switch(who[0]) {
+		case 'Firefox':
+			el.addEventListener('MozAudioAvailable', onTimeUpdate, false);
+		break;
+		case 'Chrome':
+			var meter = audioContext.createJavaScriptNode(2048, 1, 1);
+			var source = audioContext.createMediaElementSource(el);
+			var gain = audioContext.createGainNode();
+			meter.onaudioprocess = onTimeUpdate;
+			source.connect(gain);
+			gain.connect(meter);
+			meter.connect(audioContext.destination);
+		break;
+		default:
+			el.addEventListener('timeupdate', onTimeUpdate, false);
+		break;
+	}
 	document.getElementById('player').appendChild(el);
 }
 
@@ -373,3 +384,24 @@ FFT.prototype.forward = function(buffer) {
 		spectrum[i] = 2 * Math.sqrt(real[i] * real[i] + imag[i] * imag[i]) / bufferSize;
 	}
 };
+
+//BROWSER STUFF
+
+navigator.sayswho = ( function(){
+var N= navigator.appName, ua= navigator.userAgent, tem;
+var M= ua.match(/(opera|chrome|safari|firefox|msie)\/?\s*(\.?\d+(\.\d+)*)/i);
+if(M && (tem= ua.match(/version\/([\.\d]+)/i))!= null) M[2]= tem[1];
+M= M? [M[1], M[2]]: [N, navigator.appVersion,'-?'];
+return M;
+});
+
+var audioContext = null;
+window.addEventListener('load', init, false);
+function init() {
+	try {
+		audioContext = new webkitAudioContext();
+	}
+	catch(e) {
+		
+	}
+}
