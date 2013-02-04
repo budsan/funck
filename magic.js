@@ -30,7 +30,7 @@ function generateSound(params) {
 	var PI  = Math.PI;
 
 	var t = 0;
-	var rate = 0;
+	var rate = _rate;
 	var s = function(i, chan) {
 		if (i >= 0 && i < _samples.length) return _samples[i];
 		return 0;
