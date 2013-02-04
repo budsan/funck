@@ -32,9 +32,7 @@ function generateSound(params) {
 	var t = 0;
 	var rate = 0;
 	var s = function(i, chan) {
-		if (typeof chan === 'undefined') chan = _curChan;
-		i *= _channels;
-		if (i >= 0 && i < _samples.length) return _samples[i+chan];
+		if (i >= 0 && i < _samples.length) return _samples[i];
 		return 0;
 	};
 	
@@ -44,6 +42,12 @@ function generateSound(params) {
 	if (params.oneliner2 != "") {
 		eval("_f2 = function (t) { return " + params.oneliner2 + ";}");
 		_channels = 2;
+		s = function(i, chan) {
+			if (typeof chan === 'undefined') chan = _curChan;
+			i *= _channels;
+			if (i >= 0 && i < _samples.length) return _samples[i+chan];
+			return 0;
+		};
 	}
 	
 	for (var _t = _t0; _t < _rate*_seconds; _t++) {
@@ -61,34 +65,34 @@ function generateSound(params) {
 		}
 
 		//left channel
-		var sample = _f1(cT);
-		var sample2;
+		var _sample = _f1(cT);
+		var _sample2;
 		if (_channels > 1 && _f2 != null) {
 			//right channel
 			_curChan = 1;
-			sample2 = _f2(cT);
+			_sample2 = _f2(cT);
 			_curChan = 0;
 
 			//calculate value with stereo separation and normalize
-			var newSample = mixAB(sample, sample2, _separation);
-			var newSample2 = mixAB(sample2, sample, _separation);
-			sample  = newSample;
-			sample2 = newSample2;
+			var _newSample = mixAB(_sample, _sample2, _separation);
+			var _newSample2 = mixAB(_sample2, _sample, _separation);
+			_sample  = _newSample;
+			_sample2 = _newSample2;
 		}
 		//store left sample
-		_samples.push(sample);
+		_samples.push(_sample);
 		//store right sample if any
 		if (_channels > 1 && _f2 != null) {
-			_samples.push(sample2);
+			_samples.push(_sample2);
 		}
 	}
 
 	for(var i = 0; i < _samples.length; i++) {
-		var sample = parseInt(_samples[i]);
-		sample = (sample & 0xff) * 256;
-		if (sample < 0) sample = 0;
-		if (sample > 65535) sample = 65535;
-		_samples[i] = sample;
+		var _sample = parseInt(_samples[i]);
+		_sample = (_sample & 0xff) * 256;
+		if (_sample < 0) _sample = 0;
+		if (_sample > 65535) _sample = 65535;
+		_samples[i] = _sample;
 	}
 
 	return [_rate, _samples, _channels];
@@ -121,7 +125,6 @@ function c(str) {
 function split32bitValueToBytes(l) {
 	return [l&0xff, (l&0xff00)>>8, (l&0xff0000)>>16, (l&0xff000000)>>24];
 }
-
 
 function FMTSubChunk(channels, bitsPerSample, rate) {
 	var byteRate = rate * channels * bitsPerSample/8;
@@ -211,7 +214,7 @@ function makeURL(params) {
 		fftd.rate        = parseInt(rate);
 		fftd.frameBufferLength = 2048;
 
-		fftd.fft = new FFT(fftd.frameBufferLength / fftd.channels, fftd.rate);
+		fftd.fft = new FFT(fftd.frameBufferLength, fftd.rate);
 	}
 
 	return "data:audio/x-wav," + b(RIFFChunk(channels, bitsPerSample, rate, samples));	
@@ -226,7 +229,7 @@ function onTimeUpdate()
 	    signal = new Float32Array(fb.length / fftd.channels),
 	    magnitude;
 
-	if (fb.length != fftd.frameBufferLength) return;
+	if (fb.length != fftd.frameBufferLength * fftd.channels) return;
 
 	for (var i = 0, fbl = fftd.frameBufferLength; i < fbl; i++ ) {
 		signal[i] = 0;
@@ -236,14 +239,12 @@ function onTimeUpdate()
 			signal[i] += sample/32768.0;
 		}
 		signal[i] /= fftd.channels;
-		//((fb[2*i] + fb[2*i+1]) / (65535.0)) - 1.0;
 	}
 
 	fftd.fft.forward(signal);
 
 	// Clear the canvas before drawing spectrum
 	fftd.ctx.clearRect(0,0, fftd.canvas.width, fftd.canvas.height);
-
 	for (var i = 0; i < fftd.fft.spectrum.length; i++ ) {
 		// multiply spectrum by a zoom value
 		magnitude = fftd.fft.spectrum[i] * 1000;
@@ -285,7 +286,8 @@ function playDataURI(uri) {
 
 				}
 			}
-				if (audioContext !== null) {
+
+			if (audioContext !== null) {
 				var meter = audioContext.createJavaScriptNode(2048, 1, 1);
 				var source = audioContext.createMediaElementSource(el);
 				var gain = audioContext.createGainNode();
@@ -293,8 +295,8 @@ function playDataURI(uri) {
 				source.connect(gain);
 				gain.connect(meter);
 				meter.connect(audioContext.destination);
+				break;
 			}
-		break;
 		default:
 			el.addEventListener('timeupdate', onTimeUpdate, false);
 		break;
