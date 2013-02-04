@@ -102,7 +102,10 @@
 
 			<input value="Generate" id="gen" type="submit" class="btn btn-primary">
 			</form>
-				<canvas id="fft" width="900" height="200"></canvas>
+			<div style="position:relative">
+				<span id="fftfreq" style="position:absolute; top:0px;"></span>
+			</div>
+			<canvas id="fft" width="900" height="200" onmousemove="showFrequency(event)" onmouseout="clearFrequency()"></canvas>
 			<span id="error"></span>
 			<div id="player" class="audiodiv"></div>
 			<div class="container input-prepend">

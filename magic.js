@@ -212,12 +212,21 @@ function makeURL(params) {
 		fftd.frameBuffer = samples;
 		fftd.channels    = channels;
 		fftd.rate        = parseInt(rate);
-		fftd.frameBufferLength = 2048;
+		fftd.frameBufferLength = 2048*4;
 
 		fftd.fft = new FFT(fftd.frameBufferLength, fftd.rate);
 	}
 
 	return "data:audio/x-wav," + b(RIFFChunk(channels, bitsPerSample, rate, samples));	
+}
+
+var xscale = 150;
+var yscale = 60;
+var xoffs = -600;
+
+function getMagnitude(v, freq)
+{
+	return v*yscale*Math.sqrt(freq);
 }
 
 function onTimeUpdate()
@@ -243,14 +252,73 @@ function onTimeUpdate()
 
 	fftd.fft.forward(signal);
 
-	// Clear the canvas before drawing spectrum
-	fftd.ctx.clearRect(0,0, fftd.canvas.width, fftd.canvas.height);
-	for (var i = 0; i < fftd.fft.spectrum.length; i++ ) {
-		// multiply spectrum by a zoom value
-		magnitude = fftd.fft.spectrum[i] * 1000;
+	var lines = false;
+	
+	if(lines)
+	{
+		var baseFreq = fftd.rate / fftd.frameBufferLength;
+		var freq = 0;
+		var magnitude = 0;
+		// Clear the canvas before drawing spectrum
+		fftd.ctx.clearRect(0,0, fftd.canvas.width, fftd.canvas.height);
+		fftd.ctx.beginPath();
+		fftd.ctx.moveTo(0, 0);
+		for (var i = 0; i < fftd.fft.spectrum.length; i++ ) {
+			freq = baseFreq * i;
+			magnitude = getMagnitude(fftd.fft.spectrum[i], freq);
+			fftd.ctx.lineTo(Math.log(freq)*xscale+xoffs, fftd.canvas.height - magnitude);
+		}
+		fftd.ctx.stroke();
+	}
+	else if(false) //version no optimizada
+	{
+		var baseFreq = fftd.rate / fftd.frameBufferLength;
+		var freq = 0;
+		var magnitude = 0;
+		var oldx = 0;
+		// Clear the canvas before drawing spectrum
+		fftd.ctx.clearRect(0,0, fftd.canvas.width, fftd.canvas.height);
+		for (var i = 0; i < fftd.fft.spectrum.length; i++ ) {
+			freq = baseFreq * (i+0.5);
+			magnitude = getMagnitude(fftd.fft.spectrum[i], freq);
+			var x = parseInt(Math.log(freq)*xscale)+xoffs;
+			var width = x - oldx;
+			if(width < 1) width = 1;
+			fftd.ctx.fillRect(oldx, fftd.canvas.height, width, -magnitude);
+			oldx = x;
+		}
+	}
+	else
+	{
+		//BUARGH!
+		
+		var baseFreq = fftd.rate / fftd.frameBufferLength;
+		var freq = 0;
+		var magnitude = 0;
+		var oldx = 0;
+		var oldmagnitude = 0;
+		// Clear the canvas before drawing spectrum
+		fftd.ctx.clearRect(0,0, fftd.canvas.width, fftd.canvas.height);
 
-		// Draw rectangle bars for each rate bin
-		fftd.ctx.fillRect(i * 4, fftd.canvas.height, 3, -magnitude);
+		for (var i = 0; i < fftd.fft.spectrum.length; i++ ) {
+			// multiply spectrum by a zoom value
+			freq = baseFreq * (i+0.5);
+			magnitude = getMagnitude(fftd.fft.spectrum[i], freq);
+			var x = parseInt(Math.log(freq)*xscale)+xoffs;
+			if(x == oldx) {
+				if(oldmagnitude < magnitude) 
+					oldmagnitude = magnitude;
+			}
+			else {
+				if(oldmagnitude > magnitude)
+					magnitude = oldmagnitude;
+				oldmagnitude = 0;
+				var width = x - oldx;
+				if(width < 1) width = 1;
+				fftd.ctx.fillRect(oldx, fftd.canvas.height, width, -magnitude);
+			}
+			oldx = x;
+		}
 	}
 }
 
@@ -397,6 +465,20 @@ FFT.prototype.forward = function(buffer) {
 		spectrum[i] = 2 * Math.sqrt(real[i] * real[i] + imag[i] * imag[i]) / bufferSize;
 	}
 };
+
+function showFrequency(e)
+{
+	x=e.clientX - document.getElementById("fft").offsetLeft;
+	x -= xoffs;
+	x /= xscale;
+	x = Math.exp(x);
+	document.getElementById("fftfreq").innerHTML="Freq: "+x.toFixed(2)+" Hz";
+}
+
+function clearFrequency()
+{
+	document.getElementById("fftfreq").innerHTML="";
+}
 
 //BROWSER STUFF
 
