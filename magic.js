@@ -221,12 +221,12 @@ function makeURL(params) {
 }
 
 var xscale = 150;
-var yscale = 60;
+var yscale = 1000;
 var xoffs = -600;
 
 function getMagnitude(v, freq)
 {
-	return v*yscale*Math.sqrt(freq);
+	return v*yscale;
 }
 
 function onTimeUpdate()
