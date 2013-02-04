@@ -184,6 +184,7 @@ var fftd = {
 
 var el;
 var lastPosition;
+var audioContext = null;
 
 function makeURL(params) {
 	var bitsPerSample = 16;	
@@ -276,13 +277,23 @@ function playDataURI(uri) {
 			el.addEventListener('MozAudioAvailable', onTimeUpdate, false);
 		break;
 		case 'Chrome':
-			var meter = audioContext.createJavaScriptNode(2048, 1, 1);
-			var source = audioContext.createMediaElementSource(el);
-			var gain = audioContext.createGainNode();
-			meter.onaudioprocess = onTimeUpdate;
-			source.connect(gain);
-			gain.connect(meter);
-			meter.connect(audioContext.destination);
+			if (audioContext === null) {
+				try {
+					audioContext = new webkitAudioContext();
+				}
+					catch(e) {
+
+				}
+			}
+				if (audioContext !== null) {
+				var meter = audioContext.createJavaScriptNode(2048, 1, 1);
+				var source = audioContext.createMediaElementSource(el);
+				var gain = audioContext.createGainNode();
+				meter.onaudioprocess = onTimeUpdate;
+				source.connect(gain);
+				gain.connect(meter);
+				meter.connect(audioContext.destination);
+			}
 		break;
 		default:
 			el.addEventListener('timeupdate', onTimeUpdate, false);
@@ -394,14 +405,3 @@ if(M && (tem= ua.match(/version\/([\.\d]+)/i))!= null) M[2]= tem[1];
 M= M? [M[1], M[2]]: [N, navigator.appVersion,'-?'];
 return M;
 });
-
-var audioContext = null;
-window.addEventListener('load', init, false);
-function init() {
-	try {
-		audioContext = new webkitAudioContext();
-	}
-	catch(e) {
-		
-	}
-}
