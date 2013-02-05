@@ -45,7 +45,7 @@
 		box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);  
 	}
 
-	input[type="text"], .add-on {
+	input[type="text"], select, .add-on, #fftfreq {
 		height: 30px;
 		font-family: monospace;
 	}
@@ -71,24 +71,10 @@
 			<div class="span12" id="aux-container">
 				<!--<textarea id="aux"></textarea> -->
 			</div>
-
-			<div class="input-prepend">
-				<span class="add-on span1">t<sub>0</sub></span>
-				<input class="input-mini" id="t0" value="0" type="text" >
-			</div>
-			<div class="input-prepend">
-				<span class="add-on">t<sub>mod</sub></span>
-				<input class="input-mini" id="tmod" value="0" type="text" >
-			</div>
 			<div class="input-prepend input-append">
 				<span class="add-on">Duration</sub></span>
 				<input class="input-mini" id="duration" value="30" type="text" >
 				<span class="add-on">s</sub></span>
-			</div>
-			<div class="input-prepend input-append">
-				<span class="add-on">Stereo separation</sub></span>
-				<input class="input-mini" id="separation" min="0" max="100" value="100" step="5" type="text">
-				<span class="add-on">%</sub></span>
 			</div>
 			<div class="input-prepend">
 				<span class="add-on">Samplerate</span>
@@ -97,6 +83,15 @@
 					<option>22050</option>
 					<option>11025</option>
 					<option selected="selected">8000</option>
+				</select>
+			</div>
+			<div class="input-prepend">
+				<span class="add-on">Depth</span>
+				<select class="input-large" name="depth" id="depth">
+					<option value="fnorm">float normalized</option>
+					<option value="fclamp">float (-1.0/1.0)</option>
+					<option value="16bits">16bits (-32768/32767)</option>
+					<option value="8bits" selected="selected">8 bits (-128/127)</option>
 				</select>
 			</div>
 
@@ -194,25 +189,11 @@ function getParams() {
 	params.oneliner2  = document.getElementById('oneliner2').value;
 	params.aux        = codeMirror.getValue();
 
-	params.t0         = document.getElementById('t0').value;
-	params.t0         = (params.t0 < 0) ? 0 : params.t0;
-	document.getElementById('t0').value = params.t0;
-
-	params.tmod       = document.getElementById('tmod').value;
-	params.tmod       = (params.tmod  < 0) ? 0 : params.tmod ;
-	document.getElementById('tmod').value = params.tmod;
-
 	params.duration   = document.getElementById('duration').value;
 	params.duration   = (params.duration < 1.0) ? 1.0 : params.duration;
 	document.getElementById('duration').value = params.duration;
 
-	params.separation = document.getElementById('separation').value;
-	if (params.separation < 0  ) params.separation = 0;
-	if (params.separation > 100) params.separation = 100;
-	params.separation = (parseInt(params.separation)/20)*20;
-	document.getElementById('separation').value = params.separation;
-
-
+	params.depth      = document.getElementById('depth').value;
 	params.rate       = document.getElementById('samplerate').value;
 	if      (params.rate <= 8000 ) params.rate = 8000;
 	else if (params.rate <= 11025) params.rate = 11025;
@@ -232,17 +213,11 @@ function setParams(params) {
 		else                           params.rate = 44100;
 		document.getElementById('samplerate').value = params.rate;
 	}
-	if (params["t0"]) {
-		document.getElementById("t0").value = params["t0"];
-	}
-	if (params["tmod"]) {
-		document.getElementById("tmod").value = params["tmod"];
+	if (params["depth"]) {
+		document.getElementById("depth").value = params["depth"];
 	}
 	if (params["duration"]) {
 		document.getElementById("duration").value = params["duration"];
-	}
-	if (params["separation"]) {
-		document.getElementById("separation").value = params["separation"];
 	}
 	if (params["oneliner"]) {
 		document.getElementById("oneliner").value = params["oneliner"];
@@ -253,7 +228,7 @@ function setParams(params) {
 		shouldPlay = true;
 	}
 	if (params["aux"]) {
-		codeMirror.setValue(params["aux"])
+		codeMirror.setValue(params["aux"]);
 		shouldPlay = true;
 	}
 	
@@ -279,11 +254,9 @@ function makeLink(obj) {
 	parm += "oneliner="    + encodeURIComponent(obj.oneliner);
 	parm += "&oneliner2="  + encodeURIComponent(obj.oneliner2);
 	parm += "&aux="        + encodeURIComponent(obj.aux);
-	parm += "&t0="         + encodeURIComponent(obj.t0);
-	parm += "&tmod="       + encodeURIComponent(obj.tmod);
 	parm += "&duration="   + encodeURIComponent(obj.duration);
-	parm += "&separation=" + encodeURIComponent(obj.separation);
 	parm += "&rate="       + encodeURIComponent(obj.rate);
+	parm += "&depth="      + encodeURIComponent(obj.depth);
 
 	if (obj_url.length < parm.length ) {
 		parm = obj_url;

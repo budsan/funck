@@ -11,15 +11,14 @@ function mixAB(a, b, t)
 function generateSound(params) {
 	//private
 	var _rate = params.rate;
-	var _t0 = params.t0;
-	var _tmod = params.tmod;
+	var _depth = params.depth;
 	var _seconds = params.duration;
 	var _channels = 1;
 	var _f1 = null, _f2 = null;
-	var _separation = params.separation;
-	_separation = 1.0 - _separation / 100.0;
 	var _samples = [];
 	var _curChan = 0;
+	
+	var _post = null;
 
 	//public
 	var sin = Math.sin;
@@ -38,9 +37,9 @@ function generateSound(params) {
 	
 	//userspace
 	eval (params.aux);
-	eval("_f1 = function (t) { return " + params.oneliner + ";}");
+	eval("_f1 = function () { return " + params.oneliner + ";}");
 	if (params.oneliner2 != "") {
-		eval("_f2 = function (t) { return " + params.oneliner2 + ";}");
+		eval("_f2 = function () { return " + params.oneliner2 + ";}");
 		_channels = 2;
 		s = function(i, chan) {
 			if (typeof chan === 'undefined') chan = _curChan;
@@ -50,32 +49,23 @@ function generateSound(params) {
 		};
 	}
 	
-	for (var _t = _t0; _t < _rate*_seconds; _t++) {
+	for (var _t = 0; _t < _rate*_seconds; _t++) {
 		// just in case this vars are modified.
 		t = _t; 
 		rate = _rate;
 
-		//mod t with user-set value if any
-		var cT;
-		if (_tmod > 0) {
-			cT = t%_tmod;
-		}
-		else {
-			cT = t;
-		}
-
 		//left channel
-		var _sample = _f1(cT);
+		var _sample = _f1();
 		var _sample2;
 		if (_channels > 1 && _f2 != null) {
 			//right channel
 			_curChan = 1;
-			_sample2 = _f2(cT);
+			_sample2 = _f2();
 			_curChan = 0;
 
 			//calculate value with stereo separation and normalize
-			var _newSample = mixAB(_sample, _sample2, _separation);
-			var _newSample2 = mixAB(_sample2, _sample, _separation);
+			var _newSample = mixAB(_sample, _sample2, 1.0);
+			var _newSample2 = mixAB(_sample2, _sample, 1.0);
 			_sample  = _newSample;
 			_sample2 = _newSample2;
 		}
@@ -87,13 +77,53 @@ function generateSound(params) {
 		}
 	}
 
-	for(var i = 0; i < _samples.length; i++) {
-		var _sample = parseInt(_samples[i]);
-		_sample = (_sample & 0xff) * 256;
-		if (_sample < 0) _sample = 0;
-		if (_sample > 65535) _sample = 65535;
-		_samples[i] = _sample;
+	switch(_depth) {
+		case 'fnorm':
+			_min =  1.7976931348623157E+10308, // Infinity
+			_max = -1.7976931348623157E+10308; //-Infinity
+			for(var i = 0; i < _samples.length; i++) {
+				var _sample = _samples[i];
+				if (_sample < _min) _min = _sample;
+				if (_sample > _max) _max = _sample;
+			}
+			
+			_d = 1.0 / ((_max - _min) * 0.5);
+			for(var i = 0; i < _samples.length; i++) {
+				var _sample = _samples[i];
+				_samples[i] = ((_sample-_min)*_d) - 1.0;
+			}
+		case 'fclamp':
+			for(var i = 0; i < _samples.length; i++) {
+				var _sample = _samples[i];
+				if (_sample < -1.0) _sample = -1.0;
+				if (_sample >  1.0) _sample =  1.0;
+				_sample = parseInt(_sample * 32767);
+				if (_sample < 0) _sample += 65536
+				_samples[i] = _sample;
+			}
+		break;
+		case '16bits':
+			for(var i = 0; i < _samples.length; i++) {
+				var _sample = parseInt(_samples[i]);
+				_sample = (_sample & 0xffff);
+				if (_sample < 0) _sample = 0;
+				if (_sample > 65535) _sample = 65535;
+				_samples[i] = _sample;
+			}
+		break;
+		case '8bits':
+		default:
+			for(var i = 0; i < _samples.length; i++) {
+				var _sample = parseInt(_samples[i]);
+				_sample = (_sample & 0xff) * 256;
+				if (_sample < 0) _sample = 0;
+				if (_sample > 65535) _sample = 65535;
+				_samples[i] = _sample;
+			}
+		break;
 	}
+
+	
 
 	return [_rate, _samples, _channels];
 }
