@@ -273,7 +273,7 @@ function stop() {
 function showProgress() {
 	stop();
 	bar = document.createElement("meter");
-	bar.setAttribute("value", 0.2);
+	bar.setAttribute("value", 0);
 	document.getElementById('player').appendChild(bar);
 }
 
