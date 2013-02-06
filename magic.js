@@ -216,17 +216,23 @@ var fftd = {
 };
 
 var el;
-var lastPosition;
+var bar;
 var audioContext = null;
 
 function makeURL(params, freturn) {
 	if (typeof freturn === 'undefined') return;
+
+	var gen = document.getElementById("gen");
+	gen.className += " disabled";
+	showProgress();
 	setTimeout( function () {
 		try {
-			makeURL_async(params, freturn);	
-			document.getElementById('error').innerText = "";
+			makeURL_async(params, freturn);
+			gen.className = gen.className.replace(" disabled", "");
+			document.getElementById('error').innerHTML = "";
 		} catch (err) {
-			document.getElementById('error').innerText = ""+err;
+			gen.className = gen.className.replace(" disabled", "");
+			document.getElementById('error').innerHTML = ""+err;
 			alert(err);					
 			throw err;
 		}
@@ -372,13 +378,24 @@ function stop() {
 		el.pause();
 		el.src = "";
 		document.getElementById('player').removeChild(el);
-		lastPosition = 0;
 	}
 	el = null;
 }
 
+function showProgress() {
+	stop();
+	bar = document.createElement("meter");
+	bar.setAttribute("value", 0.2);
+	document.getElementById('player').appendChild(bar);
+}
+
 function playDataURI(uri) {
 	stop();
+	if (bar) {
+		document.getElementById('player').removeChild(bar);
+	}
+	bar = null;
+	
 	el = document.createElement("audio");
 	el.setAttribute("autoplay", true);
 	el.setAttribute("src", uri);

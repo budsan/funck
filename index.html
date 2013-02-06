@@ -27,7 +27,7 @@
 		box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(120, 120, 120, 0.6);
 	}
 
-	audio {
+	audio, meter {
 		width: 100%;
 		height: 30px;
 	}
@@ -182,12 +182,8 @@ function play() {
 	//create links
 	var obj = getParams();
 	document.getElementById("link").value = makeLink(obj);
-
-	var gen = document.getElementById("gen");
-	gen.className += " disabled";
 	makeURL(obj, function(result) {
 		playDataURI(result);
-		gen.className = gen.className.replace(" disabled", "");
 	});
 }
 
