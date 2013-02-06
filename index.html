@@ -5,14 +5,13 @@
 	<link rel="stylesheet" href="css/bootstrap.css" >
 
 	<link rel="stylesheet" href="lib/codemirror.css">
-	<script src="lib/codemirror.js"></script>
 	<link rel="stylesheet" href="theme/bootstrap.css">
-	<script src="mode/javascript/javascript.js"></script>
-
 	<style>
 	
 	.container {
-		width: 90%;
+		width: 95%;
+		margin-left:auto;
+		margin-right:auto;
 	}
 
 	.player-div {
@@ -28,8 +27,8 @@
 		box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(120, 120, 120, 0.6);
 	}
 
-	.audiodiv, audio {
-		width: 900px;
+	audio {
+		width: 100%;
 		height: 30px;
 	}
 
@@ -108,7 +107,7 @@
 					<span id="fftfreq" style="position:absolute;top:0px;padding:10px;"></span>
 				</div>
 				<canvas id="fft" width="900" height="200" onmousemove="showFrequency(event)" onmouseout="clearFrequency()"></canvas>
-				<div id="player" class="audiodiv"></div>
+				<div id="player"></div>
 			</div>
 			<div class="container input-prepend">
 				<span class="oneliner add-on">Permalink</span>
@@ -116,6 +115,8 @@
 			</div>
 			<span id="error"></span>
 	</div>
+<script src="lib/codemirror.js"></script>
+<script src="mode/javascript/javascript.js"></script>
 
 <script src="magic.js"></script>
 <script src="codecs.js"></script>

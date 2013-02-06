@@ -23,7 +23,7 @@
 	transition: border linear 0.2s, box-shadow linear 0.2s;
 }
 
-.cm-s-bootstrap .CodeMirror-focused .CodeMirror-selected {
+.cm-s-bootstrap .CodeMirror-focused {
 	/* Copied from Bootstrap's textarea */
 	border-color: rgba(82, 168, 236, 0.8);
 	outline: 0;
