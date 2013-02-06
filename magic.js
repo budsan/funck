@@ -219,9 +219,23 @@ var el;
 var lastPosition;
 var audioContext = null;
 
-function makeURL(params) {
-	var bitsPerSample = 16;	
+function makeURL(params, freturn) {
+	if (typeof freturn === 'undefined') return;
+	setTimeout( function () {
+		try {
+			makeURL_async(params, freturn);	
+			document.getElementById('error').innerText = "";
+		} catch (err) {
+			document.getElementById('error').innerText = ""+err;
+			alert(err);					
+			throw err;
+		}
+	}, 500);
+}
+
+function makeURL_async(params, freturn) {
 	var generated = generateSound(params);
+	var bitsPerSample = 16;
 	var rate = generated[0];
 	var samples = generated[1];
 	var channels = generated[2];
@@ -247,7 +261,7 @@ function makeURL(params) {
 		fftd.fft = new FFT(fftd.frameBufferLength, fftd.rate);
 	}
 
-	return "data:audio/x-wav," + b(RIFFChunk(channels, bitsPerSample, rate, samples));	
+	freturn("data:audio/x-wav," + b(RIFFChunk(channels, bitsPerSample, rate, samples)));
 }
 
 var xscale = 150;
