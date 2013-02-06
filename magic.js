@@ -3,131 +3,6 @@
 // 2011-10-07 - Modifications by raer.
 // 2013-01-30 - Modifications by bud.
 
-function mixAB(a, b, t)
-{
-	return (a + b * t) / (1.0 + t);
-}
-
-function generateSound(params) {
-	//private
-	var _rate = params.rate;
-	var _depth = params.depth;
-	var _seconds = params.duration;
-	var _channels = 1;
-	var _f1 = null, _f2 = null;
-	var _samples = [];
-	var _curChan = 0;
-	
-	var _post = null;
-
-	//public
-	var sin = Math.sin;
-	var cos = Math.cos;
-	var tan = Math.tan;
-	var floor = Math.floor;
-	var ceil  = Math.ceil;
-	var PI  = Math.PI;
-
-	var t = 0;
-	var rate = _rate;
-	var s = function(i, chan) {
-		if (i >= 0 && i < _samples.length) return _samples[i];
-		return 0;
-	};
-	
-	//userspace
-	eval (params.aux);
-	eval("_f1 = function () { return " + params.oneliner + ";}");
-	if (params.oneliner2 != "") {
-		eval("_f2 = function () { return " + params.oneliner2 + ";}");
-		_channels = 2;
-		s = function(i, chan) {
-			if (typeof chan === 'undefined') chan = _curChan;
-			i *= _channels;
-			if (i >= 0 && i < _samples.length) return _samples[i+chan];
-			return 0;
-		};
-	}
-	
-	for (var _t = 0; _t < _rate*_seconds; _t++) {
-		// just in case this vars are modified.
-		t = _t; 
-		rate = _rate;
-
-		//left channel
-		var _sample = _f1();
-		var _sample2;
-		if (_channels > 1 && _f2 != null) {
-			//right channel
-			_curChan = 1;
-			_sample2 = _f2();
-			_curChan = 0;
-
-			//calculate value with stereo separation and normalize
-			var _newSample = mixAB(_sample, _sample2, 1.0);
-			var _newSample2 = mixAB(_sample2, _sample, 1.0);
-			_sample  = _newSample;
-			_sample2 = _newSample2;
-		}
-		//store left sample
-		_samples.push(_sample);
-		//store right sample if any
-		if (_channels > 1 && _f2 != null) {
-			_samples.push(_sample2);
-		}
-	}
-
-	switch(_depth) {
-		case 'fnorm':
-			_min =  1.7976931348623157E+10308, // Infinity
-			_max = -1.7976931348623157E+10308; //-Infinity
-			for(var i = 0; i < _samples.length; i++) {
-				var _sample = _samples[i];
-				if (_sample < _min) _min = _sample;
-				if (_sample > _max) _max = _sample;
-			}
-			
-			_d = 1.0 / ((_max - _min) * 0.5);
-			for(var i = 0; i < _samples.length; i++) {
-				var _sample = _samples[i];
-				_samples[i] = ((_sample-_min)*_d) - 1.0;
-			}
-		case 'fclamp':
-			for(var i = 0; i < _samples.length; i++) {
-				var _sample = _samples[i];
-				if (_sample < -1.0) _sample = -1.0;
-				if (_sample >  1.0) _sample =  1.0;
-				_sample = parseInt(_sample * 32767);
-				if (_sample < 0) _sample += 65536
-				_samples[i] = _sample;
-			}
-		break;
-		case '16bits':
-			for(var i = 0; i < _samples.length; i++) {
-				var _sample = parseInt(_samples[i]);
-				_sample = (_sample & 0xffff);
-				if (_sample < 0) _sample = 0;
-				if (_sample > 65535) _sample = 65535;
-				_samples[i] = _sample;
-			}
-		break;
-		case '8bits':
-		default:
-			for(var i = 0; i < _samples.length; i++) {
-				var _sample = parseInt(_samples[i]);
-				_sample = (_sample & 0xff) * 256;
-				if (_sample < 0) _sample = 0;
-				if (_sample > 65535) _sample = 65535;
-				_samples[i] = _sample;
-			}
-		break;
-	}
-
-	
-
-	return [_rate, _samples, _channels];
-}
-
 // [255, 0] -> "%FF%00"
 function b(values) {
 	var out = "";
@@ -222,25 +97,38 @@ var audioContext = null;
 function makeURL(params, freturn) {
 	if (typeof freturn === 'undefined') return;
 
+	var worker = new Worker('worker.js');
+	if (typeof worker === 'undefined') {
+		alert("You don't seem to have a browser that supports web workers. It's ok, you're not a bad person. But this app will now fail.");
+		return;
+	}
+
 	var gen = document.getElementById("gen");
 	gen.className += " disabled";
 	showProgress();
-	setTimeout( function () {
-		try {
-			makeURL_async(params, freturn);
-			gen.className = gen.className.replace(" disabled", "");
-			document.getElementById('error').innerHTML = "";
-		} catch (err) {
-			gen.className = gen.className.replace(" disabled", "");
-			document.getElementById('error').innerHTML = ""+err;
-			alert(err);					
-			throw err;
+	worker.addEventListener('message', function(e) {
+		switch(e.data.msg) {
+			case 'progress':
+				setProgress(e.data.value);
+			break;
+			case 'result':
+				makeURL_async(e.data.value, freturn);
+				gen.className = gen.className.replace(" disabled", "");
+			break;
+			case 'error':
+				err = e.data.value;
+				gen.className = gen.className.replace(" disabled", "");
+				alert(err);
+				throw err;
+			break;
 		}
-	}, 500);
+		console.log('Worker said: ', e.data);
+	}, false);
+
+	worker.postMessage(params);
 }
 
-function makeURL_async(params, freturn) {
-	var generated = generateSound(params);
+function makeURL_async(generated, freturn) {
 	var bitsPerSample = 16;
 	var rate = generated[0];
 	var samples = generated[1];
@@ -387,6 +275,12 @@ function showProgress() {
 	bar = document.createElement("meter");
 	bar.setAttribute("value", 0.2);
 	document.getElementById('player').appendChild(bar);
+}
+
+function setProgress(value) {
+	if (bar) {
+		bar.setAttribute("value", value);
+	}
 }
 
 function playDataURI(uri) {
