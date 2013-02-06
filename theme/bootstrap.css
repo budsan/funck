@@ -1,0 +1,62 @@
+.cm-s-bootstrap {
+	line-height: 1.3em;
+	font-family:  monospace !important;
+	background-color: white;
+	width: 100%;
+
+	/* Copied from Bootstrap's textarea */
+	display: inline-block;
+	padding: 4px 6px;
+	margin-bottom: 9px;
+	color: #555555;
+	border: 1px solid #ccc;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+	-moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+	box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+	-webkit-transition: border linear 0.2s, box-shadow linear 0.2s;
+	-moz-transition: border linear 0.2s, box-shadow linear 0.2s;
+	-ms-transition: border linear 0.2s, box-shadow linear 0.2s;
+	-o-transition: border linear 0.2s, box-shadow linear 0.2s;
+	transition: border linear 0.2s, box-shadow linear 0.2s;
+}
+
+.cm-s-bootstrap .CodeMirror-focused .CodeMirror-selected {
+	/* Copied from Bootstrap's textarea */
+	border-color: rgba(82, 168, 236, 0.8);
+	outline: 0;
+	outline: thin dotted \9;
+	/* IE6-9 */
+
+	-webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
+	-moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6);
+	box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(82, 168, 236, 0.6); 
+}
+
+/* Color scheme */
+.cm-s-bootstrap .cm-keyword {color: #708;}
+.cm-s-bootstrap .cm-atom {color: #219;}
+.cm-s-bootstrap .cm-number {color: #164;}
+.cm-s-bootstrap .cm-def {color: #00f;}
+.cm-s-bootstrap .cm-variable {color: black;}
+.cm-s-bootstrap .cm-variable-2 {color: #05a;}
+.cm-s-bootstrap .cm-variable-3 {color: #085;}
+.cm-s-bootstrap .cm-property {color: black;}
+.cm-s-bootstrap .cm-operator {color: black;}
+.cm-s-bootstrap .cm-comment {color: #a50;}
+.cm-s-bootstrap .cm-string {color: #a11;}
+.cm-s-bootstrap .cm-string-2 {color: #f50;}
+.cm-s-bootstrap .cm-meta {color: #555;}
+.cm-s-bootstrap .cm-error {color: #f00;}
+.cm-s-bootstrap .cm-qualifier {color: #555;}
+.cm-s-bootstrap .cm-builtin {color: #30a;}
+.cm-s-bootstrap .cm-bracket {color: #997;}
+.cm-s-bootstrap .cm-tag {color: #170;}
+.cm-s-bootstrap .cm-attribute {color: #00c;}
+.cm-s-bootstrap .cm-header {color: blue;}
+.cm-s-bootstrap .cm-quote {color: #090;}
+.cm-s-bootstrap .cm-hr {color: #999;}
+.cm-s-bootstrap .cm-link {color: #00c;}
+
