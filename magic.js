@@ -97,35 +97,54 @@ var audioContext = null;
 function makeURL(params, freturn) {
 	if (typeof freturn === 'undefined') return;
 
-	var worker = new Worker('worker.js');
-	if (typeof worker === 'undefined') {
-		alert("You don't seem to have a browser that supports web workers. It's ok, you're not a bad person. But this app will now fail.");
-		return;
+	var worker = null;
+	try {worker = new Worker('worker.js');} catch(ex) {}
+	if (typeof window.Worker === "function" && worker !== null)
+	{
+		//YAY. WEB WORKERS WORKS.
+		lockGenerate();
+		showProgress();
+		worker.addEventListener('message', function(e) {
+			switch(e.data.msg) {
+				case 'progress':
+					setProgress(e.data.value);
+				break;
+				case 'result':
+					makeURL_async(e.data.value, freturn);
+					unlockGenerate();
+					hideError();
+				break;
+				case 'error':
+					err = e.data.value;
+					hideProgress();
+					unlockGenerate();
+					showError(err.toString());
+				break;
+			}
+		}, false);
+		worker.postMessage(params);
 	}
-
-	var gen = document.getElementById("gen");
-	gen.className += " disabled";
-	showProgress();
-	worker.addEventListener('message', function(e) {
-		switch(e.data.msg) {
-			case 'progress':
-				setProgress(e.data.value);
-			break;
-			case 'result':
-				makeURL_async(e.data.value, freturn);
-				gen.className = gen.className.replace(" disabled", "");
-			break;
-			case 'error':
-				err = e.data.value;
-				gen.className = gen.className.replace(" disabled", "");
-				alert(err);
+	else
+	{
+		//BOOH. NO WEB WORKERS.
+		var gen = document.getElementById("gen");
+		gen.className += " disabled";
+		showProgress();
+		setProgress(0.3);
+		setTimeout( function () {
+			try {
+				var generated = generateSound(params);
+				makeURL_async(generated, freturn);
+				unlockGenerate();
+				hideError();
+			} catch (err) {
+				hideProgress();
+				unlockGenerate();
+				showError(err.toString());
 				throw err;
-			break;
-		}
-		console.log('Worker said: ', e.data);
-	}, false);
-
-	worker.postMessage(params);
+			}
+		}, 500);
+	}
 }
 
 function makeURL_async(generated, freturn) {
@@ -283,12 +302,36 @@ function setProgress(value) {
 	}
 }
 
-function playDataURI(uri) {
-	stop();
+function hideProgress() {
 	if (bar) {
 		document.getElementById('player').removeChild(bar);
 	}
 	bar = null;
+}
+
+function lockGenerate() {
+	var gen = document.getElementById("gen");
+	gen.className += " disabled";
+}
+
+function unlockGenerate() {
+	var gen = document.getElementById("gen");
+	gen.className = gen.className.replace(" disabled", "");
+}
+
+function showError(string) {
+	var errordiv = document.getElementById('error');
+	errordiv.innerHTML = string;
+	errordiv.className = "";
+}
+
+function hideError() {
+	document.getElementById('error').className = "hide";
+}
+
+function playDataURI(uri) {
+	stop();
+	hideProgress();
 	
 	el = document.createElement("audio");
 	el.setAttribute("autoplay", true);

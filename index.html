@@ -55,6 +55,26 @@
 		font-family: monospace;
 	}
 
+	#error {
+		margin-left:auto;
+		margin-right:auto;
+		margin-top:10px;
+		margin-bottom:10px;
+		font-family: monospace;
+		padding: 8px 35px 8px 14px;
+		margin-bottom: 20px;
+		text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+		background-color: #fcf8e3;
+		border: 1px solid #fbeed5;
+		-webkit-border-radius: 4px;
+		   -moz-border-radius: 4px;
+		        border-radius: 4px;
+
+		color: #b94a48;
+		background-color: #f2dede;
+		border-color: #eed3d7;
+	}
+
 	</style>
 </head>
 	<body>
@@ -102,6 +122,7 @@
 			</div>
 			
 			</form>
+			<div id="error" class=" hide"></div>
 			<div class="player-div">
 				<div style="position:relative">
 					<span id="fftfreq" style="position:absolute;top:0px;padding:10px;"></span>
@@ -113,11 +134,11 @@
 				<span class="oneliner add-on">Permalink</span>
 				<input class="onliner-input input-block-level" id="link" type="text" placeholder="hinthint: use this as an URL">
 			</div>
-			<span id="error"></span>
 	</div>
 <script src="lib/codemirror.js"></script>
 <script src="mode/javascript/javascript.js"></script>
 
+<script src="worker.js"></script>
 <script src="magic.js"></script>
 <script src="codecs.js"></script>
 
