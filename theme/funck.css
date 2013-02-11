@@ -1,0 +1,52 @@
+.cm-s-funck {
+	line-height: 1.3em;
+	font-family:  monospace !important;
+	background-color: white;
+	width: 100%;
+
+	display: inline-block;
+	padding: 4px 6px;
+	margin-bottom: 9px;
+	color: #555555;
+	border: 1px solid #ccc;
+
+	-webkit-border-radius: 3px;
+	   -moz-border-radius: 3px;
+	        border-radius: 3px;
+
+	-webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+	   -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+	        box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+
+	-webkit-transition: border linear 0.2s, box-shadow linear 0.2s;
+	   -moz-transition: border linear 0.2s, box-shadow linear 0.2s;
+	    -ms-transition: border linear 0.2s, box-shadow linear 0.2s;
+	     -o-transition: border linear 0.2s, box-shadow linear 0.2s;
+	        transition: border linear 0.2s, box-shadow linear 0.2s;
+}
+
+/* Color scheme */
+.cm-s-funck .cm-keyword {color: #708;}
+.cm-s-funck .cm-atom {color: #219;}
+.cm-s-funck .cm-number {color: #164;}
+.cm-s-funck .cm-def {color: #00f;}
+.cm-s-funck .cm-variable {color: black;}
+.cm-s-funck .cm-variable-2 {color: #05a;}
+.cm-s-funck .cm-variable-3 {color: #085;}
+.cm-s-funck .cm-property {color: black;}
+.cm-s-funck .cm-operator {color: black;}
+.cm-s-funck .cm-comment {color: #a50;}
+.cm-s-funck .cm-string {color: #a11;}
+.cm-s-funck .cm-string-2 {color: #f50;}
+.cm-s-funck .cm-meta {color: #555;}
+.cm-s-funck .cm-error {color: #f00;}
+.cm-s-funck .cm-qualifier {color: #555;}
+.cm-s-funck .cm-builtin {color: #30a;}
+.cm-s-funck .cm-bracket {color: #997;}
+.cm-s-funck .cm-tag {color: #170;}
+.cm-s-funck .cm-attribute {color: #00c;}
+.cm-s-funck .cm-header {color: blue;}
+.cm-s-funck .cm-quote {color: #090;}
+.cm-s-funck .cm-hr {color: #999;}
+.cm-s-funck .cm-link {color: #00c;}
+
