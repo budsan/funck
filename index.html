@@ -314,6 +314,7 @@ function play() {
 
 	//create links
 	var obj = getParams();
+	document.title = makeTitle(obj);
 	document.getElementById("link").value = makeLink(obj);
 	makeURL(obj, function(result) {
 		playDataURI(result);
@@ -400,6 +401,15 @@ function setParams(params) {
 	}
 	
 	return shouldPlay;
+}
+
+function makeTitle(obj) {
+	if (obj && obj.oneliner) {
+		var foo = obj.oneliner;
+		var one = (foo.length > 80) ? (foo.substring(0, 77) + "...") : foo;
+		return "Funck: " + one;
+	}
+	return "Funck";
 }
 
 function makeLink(obj) {
