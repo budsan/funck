@@ -2,16 +2,44 @@
 <html>
 <head>
 	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
-	<link rel="stylesheet" href="css/bootstrap.css" >
-
 	<link rel="stylesheet" href="lib/codemirror.css">
 	<link rel="stylesheet" href="theme/bootstrap.css">
+	<title>Funck</title>
 	<style>
-	
-	.container {
+	body {
+		background-color: white;
+		color: #333333;
+		font-family:  monospace !important;
+		font-size: 14px;
+		line-height: 20px;
+		margin: 0;
+	}
+
+	audio, meter {
+		width: 100%;
+		height: 30px;
+	}
+
+	.hide {
+		display:none;
+	}
+
+	.center {
+		margin-left:auto;
+		margin-right:auto;
+	}
+
+	.box {
 		width: 95%;
 		margin-left:auto;
 		margin-right:auto;
+
+		background-color: #F5F5F5;
+		border: 1px solid #E3E3E3;
+		border-radius: 4px 4px 4px 4px;
+		box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05) inset;
+		margin-bottom: 20px;
+		padding: 19px;
 	}
 
 	.player-div {
@@ -27,32 +55,113 @@
 		box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(120, 120, 120, 0.6);
 	}
 
-	audio, meter {
-		width: 100%;
-		height: 30px;
-	}
-
-	.input-prepend {
+	.param-table {
 		display: table;
 		width: 100%;
 	}
 
-	.add-on.oneliner
-	{
-		display: table-cell;
-		width: 50px;
-		background-color: white;
+	.param {
+		display:table-cell;
+		font-family:  monospace !important;
+		font-size: 14px;
+		height: 20px;
+		line-height: 20px;
+		padding: 4px 6px;
+		vertical-align: middle;
 	}
 
-	.onliner-input
+	div.param {
+		line-height: 0px;
+		padding: 0px;
+	}
+
+	.param.oneliner
 	{
-		display: table-cell;
 		width: 100%;
 		border-left-style: none;
+		line-height: 30px;
+		background-color: white;
+		border: 1px solid #AAAAAA;
+		-webkit-border-radius: 0 4px 4px 0;
+		   -moz-border-radius: 0 4px 4px 0;
+		        border-radius: 0 4px 4px 0;
 	}
 
-	input[type="text"], select, .add-on, #fftfreq {
-		font-family: monospace;
+	span.param {
+		width: 50px;
+		margin-left: 10px;
+		margin-right: 0px;
+		text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+		background-color: #F9F9F9;
+		border: 1px solid #AAAAAA;
+		border-right-style: none;
+		-webkit-border-radius: 4px 0 0 4px;
+		   -moz-border-radius: 4px 0 0 4px;
+		        border-radius: 4px 0 0 4px;
+	}
+
+	input[type="text"].param {
+		margin-left: 0px;
+		background-color: white;
+		border: 1px solid #AAAAAA;
+		-webkit-border-radius: 0 4px 4px 0;
+		   -moz-border-radius: 0 4px 4px 0;
+		        border-radius: 0 4px 4px 0;
+	}
+
+	select.param {
+		margin-left: 0px;
+		height: 30px;
+		line-height: 30px;
+		background-color: white;
+		border: 1px solid #AAAAAA;	
+		-webkit-border-radius: 0 4px 4px 0;
+		   -moz-border-radius: 0 4px 4px 0;
+		        border-radius: 0 4px 4px 0;
+	}
+
+	.btn {
+		font-family:  monospace !important;
+		font-size: 14px;
+		height: 20px;
+		line-height: 20px;
+		padding: 4px 6px;
+		vertical-align: middle;
+
+		display: inline-block;
+		*display: inline;
+		padding: 4px 12px;
+		margin-bottom: 0;
+		*margin-left: .3em;
+		font-size: 14px;
+		line-height: 20px;
+		text-align: center;
+		vertical-align: middle;
+		cursor: pointer;
+		height: 30px;
+	
+		-webkit-border-radius: 4px;
+		   -moz-border-radius: 4px;
+		        border-radius: 4px;
+		filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffffff', endColorstr='#ffe6e6e6', GradientType=0);
+		filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
+		*zoom: 1;
+		-webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+		   -moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+		        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+
+
+		background-color: #5BB75B;
+		background-image: linear-gradient(to bottom, #62C462, #51A351);
+		background-repeat: repeat-x;
+		border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+		color: #FFFFFF;
+		text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+	}
+
+	.btn:hover, .btn:focus, .btn:active, .btn.active, .btn.disabled, .btn[disabled] {
+		background-color: #51A351;
+		color: #FFFFFF;
 	}
 
 	#error {
@@ -75,65 +184,68 @@
 		border-color: #eed3d7;
 	}
 
+	#aux-container {
+		display:block;
+		width:100%;
+		margin: 0px
+	}
 	</style>
 </head>
-	<body>
-		<div class="container well">
-			<form onsubmit="return false;">
-			<div class="input-prepend">
-				<span class="oneliner add-on">Left</span>
-				<input class="onliner-input input-block-level" id="oneliner" value="t * ((t&gt;&gt;12|t&gt;&gt;8)&amp;63&amp;t&gt;&gt;4)" type="text" placeholder="Put your oneliner here...">
-			</div>
-			<div class="input-prepend">
-				<span class="oneliner add-on">Right</span>
-				<input class="onliner-input input-block-level" id="oneliner2" type="text" placeholder="Leave this field empty for mono sound...">
-			</div>
+<body>
+	<div class="box">
+		<form onsubmit="return false;">
+		<div class="param-table">
+			<span class="param">Left</span>
+			<input class="param oneliner" id="oneliner" value="t * ((t&gt;&gt;12|t&gt;&gt;8)&amp;63&amp;t&gt;&gt;4)" type="text" placeholder="Put your oneliner here...">
+		</div>
+		<div class="param-table">
+			<span class="param">Right</span>
+			<input class="param oneliner" id="oneliner2" type="text" placeholder="Leave this field empty for mono sound...">
+		</div>
 
-			<div class="span11" id="aux-container" style="display:block; width:99%; margin: 0px">
-				<!--<textarea id="aux"></textarea> -->
-			</div>
+		<div class="span11" id="aux-container">
+			<!--<textarea id="aux"></textarea> -->
+		</div>
 
-			<div style="display:table">
-				<div class="input-prepend" style="display:table-cell">
-					<input value="Generate" id="gen" type="submit" class="btn btn-primary">
-				</div>
-				<div class="input-prepend" style="display:table-cell">
-					<span class="add-on">Duration</span>
-					<input class="input-mini" id="duration" value="30" type="text" >
-				</div>
-				<div class="input-prepend" style="display:table-cell">
-					<span class="add-on">Samplerate</span>
-					<select class="input-small" name="samplerate" id="samplerate">
-						<option>44100</option>
-						<option>22050</option>
-						<option>11025</option>
-						<option selected="selected">8000</option>
-					</select>
-				</div>
-				<div class="input-prepend" style="display:table-cell">
-					<span class="add-on">Depth</span>
-					<select class="input-large" name="depth" id="depth">
-						<option value="fnorm">float normalized</option>
-						<option value="fclamp">float (-1.0/1.0)</option>
-						<option value="16bits">16bits (-32768/32767)</option>
-						<option value="8bits" selected="selected">8 bits (-128/127)</option>
-					</select>
+		<div class="param-table">
+			<span class="param" style="width:0%">Duration</span>
+			<input class="param" style="width:50px" name="duration" id="duration" value="30" type="text">
+			<span class="param" style="width:0%">Rate</span>
+			<select class="param" style="width:100px" name="rate" id="rate">
+				<option>44100</option>
+				<option>22050</option>
+				<option>11025</option>
+				<option selected="selected">8000</option>
+			</select>
+			<span class="param" style="width:50px">Depth</span>
+			<select class="param" style="width:200px" name="depth" id="depth">
+				<option value="fnorm">float normalized</option>
+				<option value="fclamp">float (-1.0/1.0)</option>
+				<option value="16bits">16bits (-32768/32767)</option>
+				<option value="8bits" selected="selected">8 bits (-128/127)</option>
+			</select>
+
+			<div class="param" style="width:100%">
+				<div style="float:right">
+				<input value="GENERATE" id="gen" type="submit" class="btn center">
 				</div>
 			</div>
-			
-			</form>
-			<div id="error" class=" hide"></div>
-			<div class="player-div">
-				<div style="position:relative">
-					<span id="fftfreq" style="position:absolute;top:0px;padding:10px;"></span>
-				</div>
-				<canvas id="fft" width="900" height="200" onmousemove="showFrequency(event)" onmouseout="clearFrequency()"></canvas>
-				<div id="player"></div>
+		</div>
+		
+
+		</form>
+		<div id="error" class="hide"></div>
+		<div class="player-div">
+			<div style="position:relative">
+				<span id="fftfreq" style="position:absolute;top:0px;padding:10px;"></span>
 			</div>
-			<div class="container input-prepend">
-				<span class="oneliner add-on">Permalink</span>
-				<input class="onliner-input input-block-level" id="link" type="text" placeholder="hinthint: use this as an URL">
-			</div>
+			<canvas id="fft" width="900" height="200" onmousemove="showFrequency(event)" onmouseout="clearFrequency()"></canvas>
+			<div id="player"></div>
+		</div>
+		<div class="container param-table">
+			<span class="param">Permalink</span>
+			<input class="param oneliner" id="link" type="text" placeholder="hinthint: use this as an URL">
+		</div>
 	</div>
 <script src="lib/codemirror.js"></script>
 <script src="mode/javascript/javascript.js"></script>
@@ -250,12 +362,12 @@ function getParams() {
 	document.getElementById('duration').value = params.duration;
 
 	params.depth      = document.getElementById('depth').value;
-	params.rate       = document.getElementById('samplerate').value;
+	params.rate       = document.getElementById('rate').value;
 	if      (params.rate <= 8000 ) params.rate = 8000;
 	else if (params.rate <= 11025) params.rate = 11025;
 	else if (params.rate <= 22050) params.rate = 22050;
 	else                           params.rate = 44100;
-	document.getElementById('samplerate').value = params.rate;
+	document.getElementById('rate').value = params.rate;
 
 	return params;
 }
@@ -267,7 +379,7 @@ function setParams(params) {
 		else if (params.rate <= 11025) params.rate = 11025;
 		else if (params.rate <= 22050) params.rate = 22050;
 		else                           params.rate = 44100;
-		document.getElementById('samplerate').value = params.rate;
+		document.getElementById("rate").value = params.rate;
 	}
 	if (params["depth"]) {
 		document.getElementById("depth").value = params["depth"];

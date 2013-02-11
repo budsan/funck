@@ -1,7 +1,7 @@
-function mixAB(a, b, t)
-{
-	return (a + b * t) / (1.0 + t);
-}
+// Code in ~2 hours by Bemmu, idea and sound code snippet from Viznut.
+// 2011-09-30 - Modifications by raer.
+// 2011-10-07 - Modifications by raer.
+// Last modifications by budsan: https://github.com/budsan/funck
 
 function ProgressPost(size, rate) {
 	this.sizeInv = 1.0/size;
@@ -107,12 +107,6 @@ function generateSound(params, notificate) {
 			try {_sample2 = _f2();}
 			catch(ex) {throw "Runtime Right | " + ex.toString();};
 			_curChan = 0;
-
-			//calculate value with stereo separation and normalize
-			var _newSample = mixAB(_sample, _sample2, 1.0);
-			var _newSample2 = mixAB(_sample2, _sample, 1.0);
-			_sample  = _newSample;
-			_sample2 = _newSample2;
 		}
 		//store left sample
 		_samples.push(_sample);

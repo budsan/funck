@@ -1,7 +1,7 @@
 // Code in ~2 hours by Bemmu, idea and sound code snippet from Viznut.
 // 2011-09-30 - Modifications by raer.
 // 2011-10-07 - Modifications by raer.
-// 2013-01-30 - Modifications by bud.
+// Last modifications by budsan: https://github.com/budsan/funck
 
 // [255, 0] -> "%FF%00"
 function b(values) {
@@ -90,12 +90,13 @@ var fftd = {
 	fft:         null
 };
 
-var el;
-var bar;
+var el = null;
+var bar = null;
 var audioContext = null;
 
 function makeURL(params, freturn) {
 	if (typeof freturn === 'undefined') return;
+	if (isInProgress()) return; // TODO: CANCEL PROGRESS
 
 	var worker = null;
 	try {worker = new Worker('worker.js');} catch(ex) {}
@@ -287,6 +288,11 @@ function stop() {
 		document.getElementById('player').removeChild(el);
 	}
 	el = null;
+	hideProgress();
+}
+
+function isInProgress() {
+	return bar !== null;
 }
 
 function showProgress() {
@@ -297,13 +303,13 @@ function showProgress() {
 }
 
 function setProgress(value) {
-	if (bar) {
+	if (isInProgress()) {
 		bar.setAttribute("value", value);
 	}
 }
 
 function hideProgress() {
-	if (bar) {
+	if (isInProgress()) {
 		document.getElementById('player').removeChild(bar);
 	}
 	bar = null;
