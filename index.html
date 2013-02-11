@@ -121,18 +121,12 @@
 	}
 
 	.btn {
-		font-family:  monospace !important;
-		font-size: 14px;
-		height: 20px;
-		line-height: 20px;
-		padding: 4px 6px;
-		vertical-align: middle;
-
 		display: inline-block;
 		*display: inline;
 		padding: 4px 12px;
 		margin-bottom: 0;
 		*margin-left: .3em;
+		font-family:  monospace !important;
 		font-size: 14px;
 		line-height: 20px;
 		text-align: center;
@@ -159,9 +153,66 @@
 		text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 	}
 
+	.btn:hover, .btn:focus {
+		background-position: 0 -15px;
+		color: #333333;
+		text-decoration: none;
+		transition: background-position 0.1s linear 0s;
+	}
+
+	.btn:focus {
+		outline: thin dotted #333333;
+		outline-offset: -2px;
+	}
+
+	.btn.active, .btn:active {
+		background-image: none;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15) inset, 0 1px 2px rgba(0, 0, 0, 0.05);
+		outline: 0 none;
+	}
+
+	.btn.disabled, .btn[disabled] {
+		background-image: none;
+		box-shadow: none;
+		cursor: default;
+		opacity: 0.65;
+	}
+
 	.btn:hover, .btn:focus, .btn:active, .btn.active, .btn.disabled, .btn[disabled] {
 		background-color: #51A351;
 		color: #FFFFFF;
+	}
+
+	textarea.param.json {
+		margin: 0px;
+		width: 100%;
+		height: 50px;
+		font-size: 10px;
+		border-left-style: none;
+		line-height: 12px;
+		background-color: white;
+		border: 1px solid #AAAAAA;
+		-webkit-border-radius: 0 4px 4px 0;
+		   -moz-border-radius: 0 4px 4px 0;
+		        border-radius: 0 4px 4px 0;
+	}
+
+	span.param.json {
+		display:block;
+		margin-left:0px;
+		height:20px;
+		width:80px;
+	}
+
+	button.json {
+		display:block;
+		height:30px;
+		width:93px;
+		padding: 4px 6px;
+		text-align: left;
+		-webkit-border-radius: 4px 0 0 4px;
+		   -moz-border-radius: 4px 0 0 4px;
+		        border-radius: 4px 0 0 4px;
 	}
 
 	#error {
@@ -183,12 +234,6 @@
 		background-color: #f2dede;
 		border-color: #eed3d7;
 	}
-
-	#aux-container {
-		display:block;
-		width:100%;
-		margin: 0px
-	}
 	</style>
 </head>
 <body>
@@ -203,7 +248,7 @@
 			<input class="param oneliner" id="oneliner2" type="text" placeholder="Leave this field empty for mono sound...">
 		</div>
 
-		<div class="span11" id="aux-container">
+		<div id="aux-container">
 			<!--<textarea id="aux"></textarea> -->
 		</div>
 
@@ -242,9 +287,16 @@
 			<canvas id="fft" width="900" height="200" onmousemove="showFrequency(event)" onmouseout="clearFrequency()"></canvas>
 			<div id="player"></div>
 		</div>
-		<div class="container param-table">
-			<span class="param">Permalink</span>
+		<div class="param-table">
+			<span class="param" style="width:80px">Permalink</span>
 			<input class="param oneliner" id="link" type="text" placeholder="hinthint: use this as an URL">
+		</div>
+		<div class="param-table">
+			<div class="param" style="width:80px;">
+				<span class="param json">JSON</span>
+				<button class="btn json" type="button" onclick="loadJSON()">LOAD</button>
+			</div>
+			<textarea class="param json" id="json" spellcheck="false"></textarea>
 		</div>
 	</div>
 <script src="lib/codemirror.js"></script>
@@ -439,7 +491,17 @@ function makeLink(obj) {
 		parm = obj_url;
 	}
 	
+	document.getElementById("json").value = obj_str;
 	return link + "?" + parm;
+}
+
+function loadJSON() {
+	var json_str = document.getElementById("json").value;
+	try {
+		params = JSON.parse(json_str);
+		setParams(params);
+	}
+	catch(ex) {}
 }
 
 var x = document.createElement('audio');
@@ -458,7 +520,6 @@ if (params) {
 	var shouldPlay = setParams(params);
 	if (shouldPlay) play();
 }
-
 </script>
 </body>
 </html>
