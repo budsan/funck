@@ -118,14 +118,6 @@ var codeMirror = CodeMirror(document.getElementById("aux-container"), {
 	}
 });
 
-function utf8_to_b64( str ) {
-    return window.btoa(encodeURIComponent( str ));
-}
-
-function b64_to_utf8( str ) {
-    return decodeURIComponent(window.atob( str ));
-}
-
 function play() {
 	//check if oneliner one is empty, but two filled
 	if (document.getElementById("oneliner").value == "" && document.getElementById("oneliner2").value != "") {
@@ -136,6 +128,7 @@ function play() {
 
 	//create links
 	var obj = getParams();
+	document.getElementById("json").value = JSON.stringify(obj);
 	document.title = makeTitle(obj);
 	document.getElementById("link").value = makeLink(obj);
 	makeURL(obj, function(result) {
@@ -261,7 +254,6 @@ function makeLink(obj) {
 		parm = obj_url;
 	}
 	
-	document.getElementById("json").value = obj_str;
 	return link + "?" + parm;
 }
 

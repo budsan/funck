@@ -1,0 +1,184 @@
+<!doctype html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<title>Funck examples</title>
+	<link rel="stylesheet" href="funck.css">
+	<style>
+	span {
+		font-family:  "Helvetica Neue",Helvetica,Arial,sans-serif;
+		font-size: 14px;
+		color: #333333;
+	}
+
+	a {
+		font-family:  "Helvetica Neue",Helvetica,Arial,sans-serif;
+		font-size: 14px;
+		color: #0088cc;
+		text-decoration: none;
+	}
+
+	a:focus {
+		outline: thin dotted #333;
+		outline: 5px auto -webkit-focus-ring-color;
+		outline-offset: -2px;
+	}
+
+	a:hover, a:active {
+		outline: 0;
+	}
+	
+	a:hover {
+		color: #005580;
+		text-decoration: underline;
+	}
+
+	.box {
+		width: 1024px;
+	}
+
+	.btn {
+		padding: 4px 6px;
+		margin-right: 12px;
+	}
+	</style>
+</head>
+<body>
+<div class="box">
+	<div class="player-div">
+		<div style="position:relative">
+			<span id="fftfreq" style="position:absolute;top:0px;padding:10px;"></span>
+		</div>
+		<canvas id="fft" width="900" height="200" onmousemove="showFrequency(event)" onmouseout="clearFrequency()"></canvas>
+		<div id="player"></div>
+	</div>
+	<div class="hide" id="error"></div>
+	<div id="gen"></div>
+</div>
+<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+
+<script src="worker.js"></script>
+<script src="magic.js"></script>
+<script src="codecs.js"></script>
+<script>
+var examples = [
+{
+	title: "Epic sax guy",
+	author: "Dirbaio",
+	info: {"oneliner":"Math.max(-127, Math.min(127, saw(tune[seq(2500, 128)], 32) + (saw(bass1[seq(2500*8*4, 4)], 32)+saw(bass2[seq(2500*8*4, 4)], 32))* bassRhythm[seq(2500*2, 16)] + s(t-parseInt(rate*0.375))*0.4 +  Math.random() * (20000 - (t+5000)%20000)*(10000 - (t)%10000)/3000000 ))","oneliner2":"","aux":"var saw = function (note, amp) {\n\tif(note <= -100) return 0;\n\tvar x = 440 * Math.pow(1.059463094359,note);\n\tx = 44100/x;\n\treturn (t%x)/x*amp\n};\n\nvar seq = function(speed,loop) {\n\treturn Math.floor(t/speed)%loop;\n};\n\ntune = [\n   4,   4,   4,   4,   4,   4,   4,   4,\n-108,-108,-108,-108,-108,-108,-108,-108,\n   4,   4,   4,-108,   4,-108,   4,-108,\n   2,-108,   4,   4,   4,   4,-108,-108,\n   4,   4,   4,   4,   4,   4,   4,   4,\n-108,-108,-108,-108,-108,-108,-108,-108,\n   4,   4,   4,-108,   4,-108,   4,-108,\n   2,-108,   4,   4,   4,   4,-108,-108,\n   4,   4,   4,   4,   4,   4,   4,   4,\n-108,-108,-108,-108,   7,   7,   7,   7,\n   7,   7,   7,-108,   4,   4,   4,   4,\n   4,   4,   4,-108,   2,   2,   2,   2,\n   2,   2,   2,-108,   0,   0,   0,   0,\n-108,-108,-108,-108,  -3,  -3,  -3,-108,\n  -3,  -3,  -3,-108,  -1,  -1,  -1,-108,\n   0,   0,   0,-108,  -3,  -3,  -3,-108,\n];\n\nbass1 = [-20,-24,-29,-25];\nbass2 = [ -8,-12,-17,-13];\nbassRhythm = [1,1,1,0,0,0,1,1,1,1,1,0,1,1,1,0,];","duration":"30","depth":"8bits","rate":44100}
+},
+{
+	title: "Tetris",
+	author: "Dirbaio",
+	info: {"oneliner":"Math.max(-127, Math.min(127, pulse(tune[seq(2500, 256)], 40) + pulse(tune[seq(2500, 256)]+12, 40) + pulse(bass1[seq(2500*8, 32)]+seq(2500, 3)*12-12, 60) + pulse(bass1[seq(2500*8, 32)]+seq(2500, 4)*12-24, 40)))","oneliner2":"","aux":"var msin = function(min, max, freq) {\n\tvar f = t/44100*freq*2*3.1415;\n\treturn (min+max)/2 + (min-max)/2 * Math.sin(f);\n};\nvar pulse = function (note, amp) {\n\tif(note <= -100) return 0;\n\tvar x = 440 * Math.pow(1.059463094359,note);\n\tx = 44100/x;\n\treturn (t%x)/x*amp + 0.5*(t%x)>x/msin(3, 8, 3) ? amp:-amp;\n};\n\nvar seq = function(speed,loop) {\n\treturn Math.floor(t/speed)%loop;\n};\n\ntune = [\n\n   4,   4,   4,   4,   4,   4,   4,   4,\n  -1,  -1,  -1,  -1,   0,   0,   0,   0, \n   2,   2,   2,   2,   2,   2,   2,   2, \n   0,   0,   0,   0,  -1,  -1,  -1,  -1,\n  -3,  -3,  -3,  -3,  -3,  -3,  -3,-108,\n  -3,  -3,  -3,  -3,   0,   0,   0,   0, \n   4,   4,   4,   4,   4,   4,   4,   4,\n   2,   2,   2,   2,   0,   0,   0,   0, \n  -1,  -1,  -1,  -1,  -1,  -1,  -1,-108,\n  -1,  -1,  -1,  -1,   0,   0,   0,   0, \n   2,   2,   2,   2,   2,   2,-108,-108,\n   4,   4,   4,   4,   4,   4,-108,-108,\n   0,   0,   0,   0,   0,   0,-108,-108,\n  -3,  -3,  -3,  -3,  -3,  -3,-108,-108,\n  -3,  -3,  -3,  -3,  -3,  -3,-108,-108,\n-108,-108,-108,-108,-108,-108,-108,-108,\n   2,   2,   2,   2,   2,   2,   2,   2, \n   2,   2,   2,   2,   5,   5,   5,   5,\n   9,   9,   9,   9,   9,   9,   9,   9,\n   7,   7,   7,   7,   5,   5,   5,   5,\n   4,   4,   4,   4,   4,   4,   4,   4,\n-108,-108,-108,-108,   0,   0,   0,   0, \n   4,   4,   4,   4,   4,   4,   4,   4,\n   2,   2,   2,   2,   0,   0,   0,   0,\n  -1,  -1,  -1,  -1,  -1,  -1,  -1,-108,\n  -1,  -1,  -1,  -1,   0,   0,   0,   0, \n   2,   2,   2,   2,   2,   2,-108,-108,\n   4,   4,   4,   4,   4,   4,-108,-108,\n   0,   0,   0,   0,   0,   0,-108,-108,\n  -3,  -3,  -3,  -3,  -3,  -3,-108,-108,\n  -3,  -3,  -3,  -3,  -3,  -3,-108,-108,\n-108,-108,-108,-108,-108,-108,-108,-108,\n\n];\n\nbass1 = [\n-20,-20,-20,-20,\n-15,-15,-15,-15,\n-16,-16,-20,-20,\n-15,-15,-15,-15,\n-22,-22,-22,-22,\n-24,-24,-24,-24,\n-16,-16,-20,-20,\n-15,-15,-15,-15,\n];","duration":"30","depth":"8bits","rate":44100}
+},
+{
+	title: "Still Alive",
+	author: "Fonserbc",
+	info: {"oneliner":"Math.max(-127, Math.min(127, pulse(tune[seq(2500, 256)], 16) + pulse(tune[seq(2500, 256)]+12, 16) + pulse(tune2[seq(2500, 256)]-12, 16) + pulse(tune2[seq(2500, 256)], 16) + s(t - rate*0.42)*0.5))","oneliner2":"","aux":"var msin = function(min, max, freq) {\n  var f = t/rate*freq*2*PI;\n  return (min+max)/2 + (min-max)/2 * Math.sin(f);\n};\nvar pulse = function (note, amp) {\n  if(note <= -100) return 0;\n  var x = 440 * Math.pow(1.059463094359,note);\n  x = rate/x;\n  return (t%x)/x*amp + 0.5*(t%x)>x/msin(3, 8, 3) ? amp:-amp;\n};\n\nvar seq = function(speed,loop) {\n  return Math.floor(t/speed)%loop;\n};\n\ntune = [\n-108,-108,-108,-108,   9,   9,   9,   9,\n-108,-108,-108,-108,-108,-108,-108,-108,\n-108,-108,-108,-108,-108,-108,-108,-108, \n-108,-108,-108,-108,-108,-108,-108,-108,\n-108,-108,-108,-108,-108,-108,-108,-108,\n-108,-108,-108,-108,-108,-108,-108,-108,\n  10,  10,  10,  10,   9,   9,   9,   9,\n   7,   7,   7,-108,   7,   7,   7,   7,\n-108,-108,-108,-108,   9,   9,   9,   9,\n-108,-108,-108,-108,-108,-108,-108,-108,\n-108,-108,-108,-108,-108,-108,-108,-108, \n-108,-108,-108,-108,-108,-108,-108,-108,\n-108,-108,-108,-108,-108,-108,-108,-108,\n-108,-108,-108,-108,   0,   0,   0,   0,\n  10,  10,  10,  10,   9,   9,   9,   9,\n   7,   7,   7,-108,   7,   7,   7,   7,\n-108,-108,-108,-108,-108,-108,-108,-108,\n   9,   9,   9,   9,   5,   5,   5,   5,\n-108,-108,-108,-108,-108,-108,-108,-108,\n   7,   7,   7,   7,   0,   0,   0,   0,\n-108,-108,-108,-108,-108,-108,-108,-108,\n-108,-108,-108,-108,-108,-108,-108,-108,\n-108,-108,-108,-108,-108,-108,-108,-108, \n-108,-108,-108,-108,-108,-108,-108,-108,\n   7,   7,   7,   7,   7,   7,   7,   7,\n   9,   9,   9,   9,  10,  10,  10,  10,\n  10,  10,  10,  10,  10,  10,  10,  10, \n   7,   7,   7,   7,   7,   7,   7,   7,\n   4,   4,   4,   4,   4,   4,   4,   4,   \n   5,   5,   5,   5,   7,   7,   7,   7,\n   7,   7,   7,   7,   7,   7,   7,   7,\n   0,   0,   0,-108,   0,   0,   0,   0,\n];\n\ntune2 = [\n   0,   0,   0,   0,   5,   5,   5,   5,\n   9,   9,   9,   9,   5,   5,   5,   5, \n   2,   2,   2,   2,   5,   5,   5,   5, \n   9,   9,   9,   9,   5,   5,   5,   5,\n   0,   0,   0,   0,   5,   5,   5,   5,\n   9,   9,   9,   9,   5,   5,   5,   5, \n   2,   2,   2,   2,   5,   5,   5,   5, \n   9,   9,   9,   9,   5,   5,   5,   5,\n   0,   0,   0,   0,   5,   5,   5,   5,\n   9,   9,   9,   9,   5,   5,   5,   5, \n   2,   2,   2,   2,   5,   5,   5,   5, \n   9,   9,   9,   9,   5,   5,   5,   5,\n   0,   0,   0,   0,   5,   5,   5,   5,\n   9,   9,   9,   9,   5,   5,   5,   5, \n   2,   2,   2,   2,   5,   5,   5,   5, \n   9,   9,   9,   9,   5,   5,   5,   5,\n   0,   0,   0,   0,   5,   5,   5,   5,\n   9,   9,   9,   9,   5,   5,   5,   5, \n   2,   2,   2,   2,   5,   5,   5,   5, \n   9,   9,   9,   9,   5,   5,   5,   5,\n   0,   0,   0,   0,   5,   5,   5,   5,\n   9,   9,   9,   9,   5,   5,   5,   5, \n   2,   2,   2,   2,   5,   5,   5,   5, \n   9,   9,   9,   9,   5,   5,   5,   5,\n   2,   2,   2,   2,   7,   7,   7,   7,\n  10,  10,  10,  10,   7,   7,   7,   7,\n   2,   2,   2,   2,   7,   7,   7,   7,\n  10,  10,  10,  10,   7,   7,   7,   7,\n   0,   0,   0,   0,   7,   7,   7,   7,\n  10,  10,  10,  10,   7,   7,   7,   7,\n   0,   0,   0,   0,   7,   7,   7,   7,\n  10,  10,  10,  10,   7,   7,   7,   7,\n];","duration":"30","depth":"8bits","rate":44100}
+},
+{
+	title: "Fantasy Chords",
+	author: "Fonserbc",
+	info: {"oneliner":"parseInt(main()*50 + s(t-parseInt(rate*0.375))*0.4)","oneliner2":"","aux":"var Oscillator = function() {\n  this.state = 0;\n  this.sample = function(freq) {\n    this.state += freq / rate;\n    if(this.state > 1) this.state--;\n    return this.state;\n  };\n};\n\nvar osc1 = new Oscillator();\n\nvar Chord = function(baseNote, numNotes, periode, isMayor, crescendo) {\n  \tvar mayorDistance = [4,3,5];\n\tvar minorDistance = [3,4,5];\n  \n  \tvar chord = [];\n  \tvar aux = baseNote;\n    for (var i = 0; i < numNotes; ++i) {\n    \tchord.push(aux);\n      \n      \tif (isMayor) aux += mayorDistance[i%mayorDistance.length];\n      \telse aux += minorDistance[i%minorDistance.length];\n    }\n  \n  \tif (crescendo) return osc1.sample(105.23131234*Math.pow(1.059463094359,chord[parseInt(((t/rate)/(periode/numNotes)) % numNotes)]));\n  \telse return osc1.sample(105.23131234*Math.pow(1.059463094359,chord[parseInt(chord.length-1-parseInt(((t/rate)/(periode/numNotes)) % numNotes))]));\n}\n\nvar notes = [0,2,4,5,7,9,11,12];\nvar nMayor = [true,false,false,true,true,false,false,true];\nvar nDir = [true,false,true,false,true,false,true,false];\n\nvar main = function() {\n  var changeChordTime = 8;\n  var i = parseInt((t/rate)/changeChordTime);\n  \n  var chordPeriode = changeChordTime/4;\n  return Chord(notes[i%notes.length], 12, chordPeriode, nMayor[i%nMayor.length], parseInt((t/rate)/chordPeriode)%2);\n};","duration":"30","depth":"fnorm","rate":44100}
+},
+];
+
+function play(id) {
+	var obj = examples[id].info;
+	makeURL(obj, function(result) {
+		playDataURI(result);
+	});
+}
+
+function edit(id) {
+	var obj = examples[id].info;
+	var url = makeLink(obj);
+	window.open(url, '_blank');
+	window.focus();
+}
+
+function makeLink(obj) {
+	var link;
+	var idx = document.URL.indexOf('?');
+	if (idx != -1) {
+		link = document.URL.substring(0, idx);
+	}
+	else {
+		link = document.URL;
+	}
+	link = link.replace("examples.html", "index.html");
+
+	obj_str = JSON.stringify(obj);
+	obj_enc = obj_str.encode_lzw();
+	obj_bin = utf8_to_b64(obj_enc);
+	obj_url = encodeURIComponent(obj_bin);
+
+	var parm = "";
+	parm += "oneliner="    + encodeURIComponent(obj.oneliner);
+	parm += "&oneliner2="  + encodeURIComponent(obj.oneliner2);
+	parm += "&aux="        + encodeURIComponent(obj.aux);
+	parm += "&duration="   + encodeURIComponent(obj.duration);
+	parm += "&rate="       + encodeURIComponent(obj.rate);
+	parm += "&depth="      + encodeURIComponent(obj.depth);
+
+	if (obj_url.length < parm.length ) {
+		parm = obj_url;
+	}
+	
+	return link + "?" + parm;
+}
+
+function generateList() {
+	
+	var $ul  = $("<ul>");
+	for (i in examples) {
+		var ex = examples[i];
+		var $li    = $("<li>");
+		var $edit  = $("<button>");
+		var $a     = $("<a>");
+		var $span  = $("<span>");
+
+		$edit.addClass("btn");
+		$edit.attr("data-toggle", "edit");
+		$edit.attr("data-target", i);
+		$edit.html("Edit");
+		
+		$a.attr("href", "#");
+		$a.attr("data-toggle", "generate");
+		$a.attr("data-target", i);
+		$a.html(ex.title);
+
+		$span.html(" by " + ex.author);
+
+		$li.append($edit);
+		$li.append($a);
+		$li.append($span);
+		$ul.append($li);
+	}
+	
+	$("#gen").append($ul);
+}
+
+generateList();
+
+$('body').on('click', '[data-toggle="generate"]', function ( e ) {
+	var $this = $(this), $target = $this.attr('data-target');
+	play($target);
+	e.preventDefault();
+});
+
+$('body').on('click', '[data-toggle="edit"]', function ( e ) {
+	var $this = $(this), $target = $this.attr('data-target');
+	edit($target);
+	e.preventDefault();
+});
+
+var x = document.createElement('audio');
+var hasAudio = (typeof(x.play) !== 'undefined');
+if (!hasAudio) {
+	alert("You don't seem to have a browser that supports audio. It's ok, you're not a bad person. But this app will now fail.");
+}
+</script>
+</body>
+</html>
