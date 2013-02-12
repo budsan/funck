@@ -280,6 +280,12 @@ function onTimeUpdate()
 	}
 }
 
+function pause() {
+	if (el) {
+		el.pause();
+	}
+}
+
 function stop() {
 	if (el) {
 		//stop audio and reset src before removing element, otherwise audio keeps playing

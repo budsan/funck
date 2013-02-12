@@ -55,7 +55,7 @@
 	<div class="hide" id="error"></div>
 	<div id="gen"></div>
 </div>
-<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+<script src="lib/jquery-1.9.1.min.js"></script>
 
 <script src="worker.js"></script>
 <script src="magic.js"></script>
@@ -84,10 +84,13 @@ var examples = [
 },
 ];
 
+var shouldPause = false;
 function play(id) {
 	var obj = examples[id].info;
+	shouldPause = false;
 	makeURL(obj, function(result) {
 		playDataURI(result);
+		if (shouldPause) pause();
 	});
 }
 
@@ -96,6 +99,8 @@ function edit(id) {
 	var url = makeLink(obj);
 	window.open(url, '_blank');
 	window.focus();
+	shouldPause = true;
+	pause();
 }
 
 function makeLink(obj) {
