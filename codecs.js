@@ -195,3 +195,12 @@ String.prototype.encode_lzw=function(){
 String.prototype.decode_lzw=function(){
     return b_decode_lzw(this).join("");
 };
+
+function utf8_to_b64( str ) {
+    return window.btoa(encodeURIComponent( str ));
+}
+
+function b64_to_utf8( str ) {
+    return decodeURIComponent(window.atob( str ));
+}
+
