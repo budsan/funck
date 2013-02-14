@@ -12,10 +12,15 @@
 	}
 
 	a {
+		margin-left: 12px;
 		font-family:  "Helvetica Neue",Helvetica,Arial,sans-serif;
 		font-size: 14px;
 		color: #0088cc;
 		text-decoration: none;
+	}
+
+	i {
+		font-size: 10px;
 	}
 
 	a:focus {
@@ -38,8 +43,10 @@
 	}
 
 	.btn {
+		margin-bottom: 12px;
+		text-align: left;
 		padding: 4px 6px;
-		margin-right: 12px;
+		width: 210px;
 	}
 	</style>
 </head>
@@ -140,25 +147,22 @@ function generateList() {
 	for (i in examples) {
 		var ex = examples[i];
 		var $li    = $("<li>");
-		var $edit  = $("<button>");
-		var $a     = $("<a>");
-		var $span  = $("<span>");
+		var $song  = $("<button>");
+		var $edit  = $("<a>");
+		
+		$song.addClass("btn");
+		$song.attr("data-toggle", "generate");
+		$song.attr("data-target", i);
+		$song.html(ex.title+" <i>by "+ex.author+"</i>");
 
-		$edit.addClass("btn");
+		$edit.attr("href", "#");
 		$edit.attr("data-toggle", "edit");
 		$edit.attr("data-target", i);
 		$edit.html("Edit");
-		
-		$a.attr("href", "#");
-		$a.attr("data-toggle", "generate");
-		$a.attr("data-target", i);
-		$a.html(ex.title);
 
-		$span.html(" by " + ex.author);
-
+		$li.append($song);
 		$li.append($edit);
-		$li.append($a);
-		$li.append($span);
+
 		$ul.append($li);
 	}
 	
